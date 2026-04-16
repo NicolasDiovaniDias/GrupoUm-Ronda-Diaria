@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monitor de Notícias Corporativo</title>
+  <style>
+    /* CSS - Estilo Timeline Profissional */
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: #0f0f0f;
+      color: #efefef;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+    }
+
+    header {
+      text-align: center;
+      padding: 40px 0 20px 0;
+      border-bottom: 1px solid #222;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      color: #e31952;
+      font-size: 1.8rem;
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+
+    .search-box {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .search-input {
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #1a1a1a;
+      color: #fff;
+      font-size: 1rem;
+      width: 60%;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: #e31952;
+    }
+
+    .search-btn {
+      padding: 12px 20px;
+      border-radius: 8px;
+      border: none;
+      background: #e31952;
+      color: white;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .search-btn:hover {
+      background: #c21545;
+    }
+
+    .dia-section {
+      margin-bottom: 40px;
+      position: relative;
+    }
+
+    .data-titulo {
+      background: #e31952;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 20px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .news-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card {
+      background: #1a1a1a;
+      border-radius: 8px;
+      padding: 16px;
+      border: 1px solid #2a2a2a;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+    }
+
+    .card:hover {
+      background: #222;
+      border-color: #e31952;
+      transform: translateX(4px);
+    }
+
+    .card-title {
+      color: #ffffff;
+      font-weight: 500;
+      font-size: 1.05rem;
+      line-height: 1.4;
+      margin-bottom: 12px;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-size: 0.75rem;
+      color: #888;
+      border-top: 1px solid #222;
+      padding-top: 10px;
+    }
+
+    .loader {
+      text-align: center;
+      margin-top: 50px;
+      font-style: italic;
+      color: #888;
+    }
+
+    .badge-source {
+      background: #333; color: #bbb; padding: 2px 8px; border-radius: 4px; font-weight: bold;
+    }
+
+    .badge-paywall {
+      background: #4a2c00; color: #ffaa00; padding: 2px 8px; border-radius: 4px; font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <header>
+      <h1>🏢 MONITOR CORPORATIVO</h1>
+      <p style="color: #666; font-size: 0.9rem;">Acompanhamento diário de menções e notícias</p>
+      
+      <div class="search-box">
+        <input type="text" id="searchInput" class="search-input" value="Renner" placeholder="Digite a empresa...">
+        <button onclick="dispararBusca()" class="search-btn">Pesquisar</button>
+      </div>
+    </header>
+
+    <div id="status" class="loader">Aguardando busca...</div>
+    <div id="news-container"></div>
+  </div>
+
+  <script>
+    // 🔴🔴🔴 COLOQUE O SEU ID DO GOOGLE APPS SCRIPT AQUI DENTRO 🔴🔴🔴
+    const SCRIPT_ID = "AKfycbwsFIKN7JL-2DHs4aXZY4GHpKlhi1_37W6Cw1VSgn3gvJy5UmR110qZRfwY6k3FEh_onA";
+
+    function dispararBusca() {
+      const termo = document.getElementById('searchInput').value;
+      if (termo.trim() !== "") {
+        carregarNoticias(termo);
+      }
+    } 
+
+    async function carregarNoticias(termoBusca) {
+      const statusLabel = document.getElementById('status');
+      const container = document.getElementById('news-container');
+
+      container.innerHTML = '';
+      statusLabel.style.display = 'block';
+      statusLabel.innerHTML = `Buscando as últimas notícias sobre <strong>"${termoBusca}"</strong>...`;
+
+      // Aplica o intitle: para buscar cirurgicamente pelo título e evita quebra de URL
+      const termoFormatado = `intitle:"${termoBusca}"`;
+      const API_URL = `https://script.google.com/macros/s/${SCRIPT_ID}/exec?q=${encodeURIComponent(termoFormatado)}`;
+
+      try {
+        const response = await fetch(API_URL, { redirect: 'follow' });
+        const noticiasJson = await response.json();
+
+        // Trava de segurança caso o Apps Script devolva um erro
+        if (noticiasJson.error) {
+           throw new Error(noticiasJson.error);
+        }
+
+        if (noticiasJson.length === 0) {
+          statusLabel.innerHTML = `Nenhuma notícia encontrada para o título "${termoBusca}" nos últimos 7 dias.`;
+          return;
+        }
+
+        const agrupadas = {};
+
+        noticiasJson.forEach(n => {
+          const dataObj = new Date(n.pubDate);
+          const dia = String(dataObj.getDate()).padStart(2, '0');
+          const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
+          const ano = dataObj.getFullYear();
+          const dataChave = `${dia}/${mes}/${ano}`;
+          const horaF = dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+          if (!agrupadas[dataChave]) agrupadas[dataChave] = [];
+
+          agrupadas[dataChave].push({
+            titulo: n.title, link: n.link, fonte: n.source, hora: horaF
+          });
+        });
+
+        statusLabel.style.display = 'none';
+        renderizar(agrupadas);
+
+      } catch (error) {
+        console.error(error);
+        statusLabel.innerHTML = `⚠️ Erro na sincronização: ${error.message}`;
+      }
+    }
+
+    function renderizar(noticias) {
+      const container = document.getElementById('news-container');
+      
+      const sitesPagos = [
+        'Valor Econômico', 'Bloomberg Linea Brasil', 'O Globo', 
+        'Folha de S.Paulo', 'O Estado de S. Paulo', 'Exame'
+      ];
+
+      const datas = Object.keys(noticias).sort((a, b) => {
+        return new Date(b.split('/').reverse().join('-')) - new Date(a.split('/').reverse().join('-'));
+      });
+
+      datas.forEach(data => {
+        const section = document.createElement('div');
+        section.className = 'dia-section';
+
+        let html = `<div class="data-titulo">${data}</div><div class="news-list">`;
+
+        noticias[data].forEach(n => {
+          let badgeAssinatura = sitesPagos.includes(n.fonte) ? `<span class="badge-paywall">🔒 Assinatura</span>` : '';
+
+          html += `
+            <a href="${n.link}" target="_blank" class="card">
+              <div class="card-title">${n.titulo}</div>
+              <div class="card-meta">
+                <span class="badge-source">🏢 ${n.fonte}</span>
+                ${badgeAssinatura}
+                <span style="margin-left: auto;">⏰ ${n.hora}</span>
+              </div>
+            </a>
+          `;
+        });
+
+        html += `</div>`;
+        section.innerHTML = html;
+        container.appendChild(section);
+      });
+    }
+
+    window.onload = () => {
+      carregarNoticias('Renner');
+      document.getElementById('searchInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') dispararBusca();
+      });
+    };
+  </script>
+</body>
+</html>
