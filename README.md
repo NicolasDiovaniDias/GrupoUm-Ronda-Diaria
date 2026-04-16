@@ -1,4 +1,4 @@
-# GrupoUm-Ronda-Di-ria
+# GrupoUm-Ronda-Diária
 <h2>Front-End:</h2>
 Html
 css
