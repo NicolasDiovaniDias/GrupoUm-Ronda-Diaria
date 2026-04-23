@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    h1{
+        text-align: center;
+    }
+    form {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    form input {
+        float: left;
+        width: 200px;
+    }
+
+    form .input-group {
+        width: 200px;
+    }
+
+    form .input-group input {
+        width: 120px;
+    }
+
+    form .input-group button {
+        width: 70px;
+    }
+</style>
+
+<body>
+    <main>
+        <article>
+            <section>
+                <h1>Empresa</h1>
+                <form action="" method="post">
+                    <input type="text" name="empresaNome" placeholder="Nome da empresa">
+                    <input type="text" name="empresaBolsa" placeholder="Ação na bolsa">
+                    <input type="text" name="empresaPais" placeholder="País da empresa">
+                    <input type="text" name="empresaRamo" placeholder="Ramo">
+
+                    <div class="input-group">
+                        <input type="text" id="nomeInput" placeholder="Ex: Renner SA">
+
+                        <button type="button" onclick="adicionarNome()">Adicionar</button>
+                    </div>
+                    <div id="listaNomes" class="chip-list">
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="termoInput" placeholder="Ex: Calçados, Roupas, etc.">
+                        <button type="button" onclick="adicionarTermo()">Adicionar</button>
+                    </div>
+                    <div id="listaTermos" class="chip-list">
+                    </div>
+                    <input type="text" name="empresaConcorrente" placeholder="Concorrentes">
+                    <button type="submit">Enviar</button>
+                </form>
+            </section>
+        </article>
+    </main>
+</body>
+<script>
+    function adicionarNome() {
+        Element.preventDefault;
+        const input = document.getElementById('nomeInput');
+        const valor = input.value.trim();
+        const lista = document.getElementById('listaNomes');
+
+        if (valor === "") return;
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.innerHTML = `
+                ${valor}
+                <button class="btn-remove" onclick="this.parentElement.remove()">x</button>
+                <input type="hidden" name="nomes[]" value="${valor}">
+            `;
+
+        lista.appendChild(chip);
+        input.value = "";
+        input.focus();
+    }
+    document.getElementById('nomeInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            adicionarNome();
+        }
+    });
+    function adicionarTermo() {
+        Element.preventDefault;
+        const input = document.getElementById('termoInput');
+        const valor = input.value.trim();
+        const lista = document.getElementById('listaTermos');
+
+        if (valor === "") return;
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.innerHTML = `
+                ${valor}
+                <button class="btn-remove" onclick="this.parentElement.remove()">x</button>
+                <input type="hidden" name="termos[]" value="${valor}">
+            `;
+
+        lista.appendChild(chip);
+        input.value = "";
+        input.focus();
+    }
+    document.getElementById('termoInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            adicionarNome();
+        }
+    });
+</script>
+
+</html>
