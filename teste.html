@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Adicionar Opções</title>
+</head>
+
+<body>
+
+    <h3>Escolha seus sabores:</h3>
+
+    <div class="input-group">
+        <input type="text" id="saborInput" placeholder="Ex: Morango">
+        <button onclick="adicionarSabor()">Adicionar</button>
+    </div>
+
+    <div id="listaSabores" class="chip-list">
+    </div>
+
+    <script>
+        function adicionarSabor() {
+            const input = document.getElementById('saborInput');
+            const valor = input.value.trim();
+            const lista = document.getElementById('listaSabores');
+
+            if (valor === "") return;
+            const chip = document.createElement('div');
+            chip.className = 'chip';
+            chip.innerHTML = `
+                ${valor}
+                <button class="btn-remove" onclick="this.parentElement.remove()">x</button>
+                <input type="hidden" name="sabores[]" value="${valor}">
+            `;
+
+            lista.appendChild(chip);
+            input.value = "";
+            input.focus();    
+        }
+        document.getElementById('saborInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                adicionarSabor();
+            }
+        });
+    </script>
+
+</body>
+
+</html>
