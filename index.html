@@ -5,35 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<style>
-    h1{
-        text-align: center;
-    }
-    form {
-        display: flex;
-        align-items: center;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    form input {
-        float: left;
-        width: 200px;
-    }
-
-    form .input-group {
-        width: 200px;
-    }
-
-    form .input-group input {
-        width: 120px;
-    }
-
-    form .input-group button {
-        width: 70px;
-    }
-</style>
 
 <body>
     <main>
@@ -60,7 +33,7 @@
                     <div id="listaTermos" class="chip-list">
                     </div>
                     <input type="text" name="empresaConcorrente" placeholder="Concorrentes">
-                    <button type="submit">Enviar</button>
+                    <button type="submit" id="button-submit">Enviar</button>
                 </form>
             </section>
         </article>
