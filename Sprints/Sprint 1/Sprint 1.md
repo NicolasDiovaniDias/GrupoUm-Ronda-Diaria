@@ -54,10 +54,10 @@ isso para começar a estrutura inicial do projeto
 | US01                |             |              |        |             |
 | US02                |             |              |        |             |
 
-S1T1 - Criar repositório - 🟢 Concluído - nicolas
-S1T2 - S1T2 - Banco de Dados - 🟢 Concluído - nicolas
-S1T3 - Tela de Cadastro - ⚫ Bloqueado - geraldo
-S1T4 - Tela de cadastro Back-End - ⚫ Bloqueado - geraldo
+S1T1 - Criar repositório - 🟢 Concluído - nicolas<br>
+S1T2 - S1T2 - Banco de Dados - 🟢 Concluído - nicolas <br>
+S1T3 - Tela de Cadastro - ⚫ Bloqueado - geraldo<br>
+S1T4 - Tela de cadastro Back-End - ⚫ Bloqueado - geraldo<br>
 ---
 
 ## 🚀 3. Entregas da Sprint
