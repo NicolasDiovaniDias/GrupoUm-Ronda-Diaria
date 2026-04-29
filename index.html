@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Ronda Diária</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -13,7 +13,7 @@
         <article>
             <section>
                 <h1>Empresa</h1>
-                <form action="" method="post">
+                <form id="formEmpresa" method="post">
                     <input type="text" name="empresaNome" placeholder="Nome da empresa">
                     <input type="text" name="empresaBolsa" placeholder="Ação na bolsa">
                     <input type="text" name="empresaPais" placeholder="País da empresa">
@@ -41,7 +41,6 @@
 </body>
 <script>
     function adicionarNome() {
-        Element.preventDefault;
         const input = document.getElementById('nomeInput');
         const valor = input.value.trim();
         const lista = document.getElementById('listaNomes');
@@ -59,13 +58,14 @@
         input.value = "";
         input.focus();
     }
+
     document.getElementById('nomeInput').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
             adicionarNome();
         }
     });
+
     function adicionarTermo() {
-        Element.preventDefault;
         const input = document.getElementById('termoInput');
         const valor = input.value.trim();
         const lista = document.getElementById('listaTermos');
@@ -83,9 +83,58 @@
         input.value = "";
         input.focus();
     }
+
     document.getElementById('termoInput').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
-            adicionarNome();
+            adicionarTermo();
+        }
+    });
+
+    document.getElementById('formEmpresa').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+
+        const nomes = Array.from(document.querySelectorAll('input[name="nomes[]"]'))
+            .map(input => input.value);
+
+        const termos = Array.from(document.querySelectorAll('input[name="termos[]"]'))
+            .map(input => input.value);
+
+        const dados = {
+            nome: form.empresaNome.value.trim(),
+            bolsa: form.empresaBolsa.value.trim(),
+            pais: form.empresaPais.value.trim(),
+            ramo: form.empresaRamo.value.trim(),
+            concorrente: form.empresaConcorrente.value.trim(),
+            nomes: nomes,
+            termos: termos
+        };
+
+        try {
+            const resposta = await fetch('http://localhost:3000/empresas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dados)
+            });
+
+            const resultado = await resposta.json();
+
+            if (resultado.sucesso) {
+                alert('Empresa cadastrada com sucesso!');
+
+                form.reset();
+                document.getElementById('listaNomes').innerHTML = '';
+                document.getElementById('listaTermos').innerHTML = '';
+            } else {
+                alert(resultado.mensagem || 'Erro ao cadastrar empresa.');
+            }
+
+        } catch (erro) {
+            console.error('Erro:', erro);
+            alert('Erro ao conectar com o servidor.');
         }
     });
 </script>
