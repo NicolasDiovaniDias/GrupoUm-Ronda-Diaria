@@ -17,8 +17,9 @@
 
 > (Descrever o objetivo definido no planejamento)
 > Criar uma pagina de registro inicial de dados a fim de usar 
-isso para começar a estrutura inicial do projeto
-
+isso para começar a estrutura inicial do projeto, com um formulario
+> para preenchimento das empresas que serão pesquisadas
+> nosso banco esta na branch arquivos de organização
 ---
 
 ## 📌 1. Resumo Executivo
@@ -49,16 +50,13 @@ isso para começar a estrutura inicial do projeto
 * 🔴 Não iniciado
 * ⚫ Bloqueado
 
-| User Story / Tarefa | Responsável | Story Points | Status | Observações |
-| ------------------- | ----------- | ------------ | ------ | ----------- |
-| US01                |             |              |        |             |
-| US02                |             |              |        |             |
+| User Story / Tarefa     | Responsável | Story Points | Status| Observações |
+| -------------------     | ----------- | ------------ | ------ | ----------- |
+| S1T1 Criar repositório  | nicolas     |       2      |   🟢  |             |
+| S1T2 Banco de Dados     | nicolas     |       5      |   🟢  |             |
+| S1T3 Tela de Cadastro   | geraldo     |       8      |   ⚫  |             |
+| S1T4 Tela de Cadastro BE| geraldo     |       8      |   ⚫  |             |
 
-S1T1 - Criar repositório - 🟢 Concluído - nicolas<br>
-S1T2 - S1T2 - Banco de Dados - 🟢 Concluído - nicolas <br>
-S1T3 - Tela de Cadastro - ⚫ Bloqueado - geraldo<br>
-S1T4 - Tela de cadastro Back-End - ⚫ Bloqueado - geraldo<br>
----
 
 ## 🚀 3. Entregas da Sprint
 S1T1 - Criar repositório - 🟢 Concluído - nicolas
@@ -96,44 +94,45 @@ Nenhuma
 
 ## 🔧 5. Processo e Ferramentas
 
-* **Controle de versão utilizado:**
-* **Estratégia de branch:**
-* **Uso de CI/CD:**
-* **Ferramentas utilizadas:**
+* **Controle de versão utilizado: S1T1 = sprint 1 task 1**
+* **Estratégia de branch: branches por função**
+* **Uso de CI/CD: branches por função junto ao validamento por pull request**
+* **Ferramentas utilizadas: GitHub e trello**
 
 ---
 
 ## ⚠️ 6. Impedimentos
-
-| Impedimento | Impacto | Solução adotada |
-| ----------- | ------- | --------------- |
-|             |         |                 |
-
+S1T3 Tela de Cadastro e S1T4 Tela de Cadastro BE
+| Impedimento    | Impacto                | Solução adotada |
+| -----------    | -------                | --------------- |
+| nicolas não    | não conseguimos        | fazer o banco em|
+| tinha terminado| fazer o esboço inicial | aula, antes da 
+| o banco        |                        | sprint 2
 ---
 
 ## 🔄 7. Retrospectiva da Sprint
 
 ### 👍 O que funcionou bem
 
-*
+* nosso banco de dados ficou bem completo
 
 ### 👎 O que pode melhorar
 
-*
+* produção do time
 
 ### 🔁 Ações para próxima sprint
 
-*
+* relatar diariamente o progresso
 
 ---
 
 ## 📊 8. Métricas da Sprint
 
-* **Story Points planejados:**
+* **Story Points planejados: 23**
 
-* **Story Points concluídos:**
+* **Story Points concluídos: 7**
 
-* **Velocidade da equipe:**
+* **Velocidade da equipe: 30%**
 
 > (Soma dos Story Points das User Stories com status 🟢 Concluído)
 > Exemplo: 18 story points concluídos de 22 planejados (82% de entrega)
@@ -142,17 +141,17 @@ Nenhuma
 
 > (SP concluídos / SP planejados) × 100
 
-* **Nº de tarefas concluídas:**
-* **Nº de tarefas não concluídas:**
-* **Nº de commits:**
-* **Nº de PRs:**
+* **Nº de tarefas concluídas: 2**
+* **Nº de tarefas não concluídas: 2**
+* **Nº de commits: 5**
+* **Nº de PRs: 5**
 
 ---
 
 ## 🎯 9. Planejamento Inicial da Próxima Sprint
 
-* **Principais objetivos:**
-* **Itens já priorizados:**
-* **Riscos identificados:**
+* **Principais objetivos: desenvolver um design bonito e montar uma apresentação, fazer alguma pesquisa com os dados do formulario**
+* **Itens já priorizados: fazer alguma pesquisa com os dados do formulario**
+* **Riscos identificados: tempo do time**
 
 ---
