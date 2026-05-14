@@ -109,3 +109,17 @@ Agora o sistema:
 - evitar duplicidade de relacionamento  
 - tela de listagem  
 - validações
+
+
+para criar na primeira vez >>> docker compose up --build
+para parar >>> docker compose down 
+para rodar depois de já criado >>> docker compose up
+
+caso queira remover o volume e apagar o db >>> docker compose down -v
+
+API >>> http://localhost:3000
+http://localhost:3000/html/index.html
+http://localhost:3000/html/pesquisa.html
+http://localhost:3000/html/teste.html
+
+>>> host agora é 'mysql' nao 'localhost'
