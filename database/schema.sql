@@ -1,8 +1,8 @@
-CREATE DATABASE ronda_diaria
-CHARACTER SET utf8mb4
-COLLATE utf8mb4_unicode_ci;
+-- CREATE DATABASE ronda_diaria
+-- CHARACTER SET utf8mb4
+-- COLLATE utf8mb4_unicode_ci;
 
-USE ronda_diaria;
+-- USE ronda_diaria;
 
 CREATE TABLE empresa (
     id_empresa INT AUTO_INCREMENT PRIMARY KEY,
