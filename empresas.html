@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ronda Diária — Empresas no Banco</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --sidebar-bg: #0f0c29;
+  --sidebar-w: 240px;
+  --accent: #8b5cf6;
+  --accent2: #ec4899;
+  --accent-grad: linear-gradient(135deg, #8b5cf6, #ec4899);
+  --body-bg: #f6f7fb;
+  --card-bg: #ffffff;
+  --text-main: #1a1a2e;
+  --text-muted: #7b80a0;
+  --border: #e8eaf2;
+  --radius: 12px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Lato', sans-serif;
+  background: var(--body-bg);
+  color: var(--text-main);
+  display: flex;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.sidebar::before {
+  content: '';
+  position: absolute;
+  bottom: 120px; left: -60px;
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(139,92,246,0.35) 0%, transparent 70%);
+  pointer-events: none;
+}
+.sidebar::after {
+  content: '';
+  position: absolute;
+  bottom: 60px; right: -40px;
+  width: 160px; height: 160px;
+  background: radial-gradient(circle, rgba(236,72,153,0.22) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.logo-area {
+  padding: 28px 22px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.logo-mark {
+  width: 42px; height: 42px;
+  background: var(--accent-grad);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Sora', sans-serif;
+  font-size: 20px; font-weight: 700;
+  color: #fff;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 16px rgba(139,92,246,0.45);
+}
+
+.logo-text { font-family: 'Sora', sans-serif; }
+.logo-text strong { display: block; color: #fff; font-size: 15px; font-weight: 700; line-height: 1.2; }
+.logo-text span { color: rgba(255,255,255,0.45); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.nav {
+  flex: 1;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  color: rgba(255,255,255,0.5);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+  text-decoration: none;
+  position: relative;
+}
+
+.nav-item:hover {
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.85);
+}
+
+.nav-item.active {
+  background: var(--accent-grad);
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(139,92,246,0.38);
+}
+
+.nav-item svg { flex-shrink: 0; }
+
+/* ── MAIN ── */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* TOPBAR */
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0;
+  z-index: 50;
+}
+
+.topbar-left h1 {
+  font-family: 'Sora', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.topbar-left p {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-grad);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  padding: 0 18px;
+  height: 38px;
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(139,92,246,0.35);
+  transition: opacity 0.15s, transform 0.15s;
+  white-space: nowrap;
+}
+.btn-action:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* ── CONTENT ── */
+.content {
+  padding: 28px 32px;
+  flex: 1;
+}
+
+/* STATUS BAR */
+.status-bar {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+
+.status-bar .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #22d3a5;
+  box-shadow: 0 0 6px rgba(34,211,165,0.7);
+  flex-shrink: 0;
+  animation: pulse-dot 2s infinite;
+}
+
+.status-bar.loading .dot { background: var(--accent); box-shadow: 0 0 6px rgba(139,92,246,0.7); }
+.status-bar.error .dot { background: #f87171; box-shadow: 0 0 6px rgba(248,113,113,0.7); animation: none; }
+
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* SEARCH + SUMMARY ROW */
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.list-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.list-title h2 {
+  font-family: 'Sora', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.badge-count {
+  background: rgba(139,92,246,0.1);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(139,92,246,0.2);
+}
+
+.search-field {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  height: 38px;
+  padding: 0 12px;
+  gap: 8px;
+  transition: border-color 0.15s;
+  min-width: 220px;
+}
+.search-field:focus-within { border-color: var(--accent); }
+.search-field svg { color: var(--text-muted); flex-shrink: 0; }
+.search-field input {
+  border: none; background: transparent;
+  font-family: 'Lato', sans-serif;
+  font-size: 13.5px;
+  color: var(--text-main);
+  outline: none;
+  flex: 1;
+}
+
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+/* CARD */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  transition: box-shadow 0.18s, transform 0.18s;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.card:hover {
+  box-shadow: 0 6px 24px rgba(139,92,246,0.1);
+  transform: translateY(-2px);
+}
+
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.card-id {
+  background: rgba(139,92,246,0.1);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(139,92,246,0.2);
+  white-space: nowrap;
+}
+
+.card-avatar {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: var(--accent-grad);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Sora', sans-serif;
+  font-size: 16px; font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(139,92,246,0.35);
+}
+
+.card-name {
+  font-family: 'Sora', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.card-meta {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.meta-dot {
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.card-divider {
+  height: 1px;
+  background: var(--border);
+  margin-bottom: 14px;
+}
+
+.card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex: 1;
+}
+
+.info-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.info-label {
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-size: 10.5px;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+  min-width: 52px;
+}
+
+.info-value {
+  color: var(--text-main);
+  line-height: 1.45;
+}
+
+.info-value.empty { color: var(--text-muted); font-style: italic; }
+
+/* Tags inline */
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tag {
+  background: #f3f0ff;
+  color: var(--accent);
+  border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+/* CARD ACTIONS */
+.card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  gap: 8px;
+}
+
+.btn-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1.5px solid rgba(248,113,113,0.35);
+  background: rgba(254,226,226,0.5);
+  color: #dc2626;
+  padding: 7px 13px;
+  border-radius: 7px;
+  font-family: 'Lato', sans-serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-delete:hover {
+  background: rgba(254,226,226,0.9);
+  border-color: rgba(248,113,113,0.65);
+}
+
+.btn-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(139,92,246,0.1);
+  color: var(--accent);
+  border: none;
+  border-radius: 7px;
+  padding: 7px 13px;
+  font-family: 'Lato', sans-serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-edit:hover { background: rgba(139,92,246,0.18); }
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+  font-size: 14px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.empty-state svg {
+  margin: 0 auto 12px;
+  display: block;
+  opacity: 0.35;
+}
+
+/* SKELETON */
+.skeleton-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+
+.skel {
+  background: linear-gradient(90deg, #eef0f8 25%, #f6f7fb 50%, #eef0f8 75%);
+  background-size: 200% 100%;
+  border-radius: 6px;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo-area">
+    <div class="logo-mark">R</div>
+    <div class="logo-text">
+      <strong>RONDA<br>DIÁRIA</strong>
+      <span>Monitoramento de Notícias</span>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a class="nav-item" href="index.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" href="index.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Buscar Notícias
+    </a>
+    <a class="nav-item" href="cadastro.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      Empresas/Clientes
+    </a>
+    <a class="nav-item active" href="empresas.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 10h10M7 14h6"/></svg>
+      Empresas no Banco
+    </a>
+    <a class="nav-item" href="#">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Termos de Pesquisa
+    </a>
+    <a class="nav-item" href="#">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      Fontes de Pesquisa
+    </a>
+    <a class="nav-item" href="#">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Relatórios
+    </a>
+    <a class="nav-item" href="#">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Configurações
+    </a>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1>Empresas no Banco</h1>
+      <p>Visualize e gerencie todas as empresas cadastradas no sistema.</p>
+    </div>
+    <div class="topbar-right">
+      <a class="btn-action" href="cadastro.html">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nova Empresa
+      </a>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- STATUS BAR -->
+    <div class="status-bar loading" id="statusBar">
+      <span class="dot"></span>
+      <span id="statusText">Carregando empresas do banco...</span>
+    </div>
+
+    <!-- LIST HEADER -->
+    <div class="list-header">
+      <div class="list-title">
+        <h2>Todas as empresas</h2>
+        <span class="badge-count" id="badgeCount">—</span>
+      </div>
+      <div class="search-field">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="filterInput" placeholder="Filtrar por nome..."/>
+      </div>
+    </div>
+
+    <!-- GRID -->
+    <section class="grid" id="lista"></section>
+
+  </div>
+</main>
+
+<script>
+  const statusBar  = document.getElementById('statusBar');
+  const statusText = document.getElementById('statusText');
+  const badgeCount = document.getElementById('badgeCount');
+  const listaEl    = document.getElementById('lista');
+  const filterInput = document.getElementById('filterInput');
+
+  let todasEmpresas = [];
+
+  function setStatus(msg, type = 'ok') {
+    statusText.textContent = msg;
+    statusBar.className = 'status-bar ' + type;
+  }
+
+  function inicialLetra(nome) {
+    return (nome || '?').trim().charAt(0).toUpperCase();
+  }
+
+  function renderTags(valor) {
+    if (!valor) return '<span class="info-value empty">—</span>';
+    const tags = String(valor).split(',').map(t => t.trim()).filter(Boolean);
+    if (!tags.length) return '<span class="info-value empty">—</span>';
+    return `<div class="tag-list">${tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>`;
+  }
+
+  function renderCards(empresas) {
+    if (!empresas.length) {
+      listaEl.innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1">
+          <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.4"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 10h10M7 14h6"/></svg>
+          Nenhuma empresa encontrada.
+        </div>`;
+      return;
+    }
+
+    listaEl.innerHTML = empresas.map(e => {
+      const meta = [e.ramo, e.pais, e.bolsa].filter(Boolean);
+      return `
+        <article class="card">
+          <div class="card-top">
+            <span class="card-id">ID ${e.id_empresa}</span>
+            <div class="card-avatar">${inicialLetra(e.nome)}</div>
+          </div>
+
+          <div class="card-name">${e.nome || 'Sem nome'}</div>
+          <div class="card-meta">
+            ${meta.length
+              ? meta.map((m, i) => `${i > 0 ? '<span class="meta-dot"></span>' : ''}${m}`).join('')
+              : '<span style="color:var(--border)">Sem detalhes</span>'}
+          </div>
+
+          <div class="card-divider"></div>
+
+          <div class="card-info">
+            <div class="info-row">
+              <span class="info-label">Nomes</span>
+              ${renderTags(e.nomes)}
+            </div>
+            <div class="info-row">
+              <span class="info-label">Termos</span>
+              ${renderTags(e.termos)}
+            </div>
+            ${e.concorrentes ? `
+            <div class="info-row">
+              <span class="info-label">Concorr.</span>
+              ${renderTags(e.concorrentes)}
+            </div>` : ''}
+          </div>
+
+          <div class="card-actions">
+            <button class="btn-delete" type="button" onclick="excluirEmpresa(${e.id_empresa})">
+              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              Excluir
+            </button>
+          </div>
+        </article>
+      `;
+    }).join('');
+  }
+
+  function filtrar() {
+    const q = filterInput.value.toLowerCase().trim();
+    if (!q) {
+      renderCards(todasEmpresas);
+      badgeCount.textContent = `${todasEmpresas.length} empresa${todasEmpresas.length !== 1 ? 's' : ''}`;
+      return;
+    }
+    const filtradas = todasEmpresas.filter(e =>
+      (e.nome || '').toLowerCase().includes(q) ||
+      (e.ramo || '').toLowerCase().includes(q) ||
+      (e.termos || '').toLowerCase().includes(q)
+    );
+    renderCards(filtradas);
+    badgeCount.textContent = `${filtradas.length} resultado${filtradas.length !== 1 ? 's' : ''}`;
+  }
+
+  async function excluirEmpresa(idEmpresa) {
+    if (!window.confirm('Deseja realmente excluir esta empresa do banco?')) return;
+    try {
+      const res = await fetch(`/empresas/${idEmpresa}`, { method: 'DELETE' });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.mensagem || 'Não foi possível excluir.');
+      setStatus(result.mensagem || 'Empresa excluída com sucesso.', 'ok');
+      await carregarEmpresas();
+    } catch (err) {
+      setStatus(err.message || 'Erro ao excluir empresa.', 'error');
+    }
+  }
+
+  async function carregarEmpresas() {
+    setStatus('Carregando empresas do banco...', 'loading');
+    listaEl.innerHTML = Array(4).fill(0).map(() => `
+      <div class="skeleton-card">
+        <div class="skel" style="width:60px;height:18px;margin-bottom:16px;"></div>
+        <div class="skel" style="width:55%;height:20px;margin-bottom:8px;"></div>
+        <div class="skel" style="width:40%;height:14px;margin-bottom:20px;"></div>
+        <div class="skel" style="width:100%;height:1px;margin-bottom:16px;"></div>
+        <div class="skel" style="width:85%;height:13px;margin-bottom:8px;"></div>
+        <div class="skel" style="width:70%;height:13px;"></div>
+      </div>
+    `).join('');
+
+    try {
+      const res = await fetch('/empresas');
+      const dados = await res.json();
+
+      todasEmpresas = Array.isArray(dados) ? dados : [];
+
+      if (!todasEmpresas.length) {
+        listaEl.innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1">
+            <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.4"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 10h10M7 14h6"/></svg>
+            Nenhuma empresa cadastrada no banco ainda.
+          </div>`;
+        setStatus('Nenhuma empresa encontrada.', 'ok');
+        badgeCount.textContent = '0 empresas';
+        return;
+      }
+
+      renderCards(todasEmpresas);
+      badgeCount.textContent = `${todasEmpresas.length} empresa${todasEmpresas.length !== 1 ? 's' : ''}`;
+      setStatus(`${todasEmpresas.length} empresa${todasEmpresas.length !== 1 ? 's' : ''} carregada${todasEmpresas.length !== 1 ? 's' : ''} com sucesso.`, 'ok');
+    } catch (err) {
+      setStatus('Não foi possível carregar as empresas. Verifique a API.', 'error');
+      listaEl.innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1">
+          <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Erro ao buscar os dados no servidor.
+        </div>`;
+    }
+  }
+
+  filterInput.addEventListener('input', filtrar);
+  carregarEmpresas();
+</script>
+</body>
+</html>

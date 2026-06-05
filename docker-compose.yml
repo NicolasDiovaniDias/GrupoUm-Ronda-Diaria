@@ -7,7 +7,14 @@ services:
       - "3000:3000"
 
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ""
+      DB_NAME: ronda_diaria
 
     volumes:
       - .:/app
@@ -26,6 +33,13 @@ services:
       MYSQL_ROOT_PASSWORD: ""
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: ronda_diaria
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 20s
 
     ports:
       - "3306:3306"

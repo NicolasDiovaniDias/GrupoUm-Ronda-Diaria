@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ronda Diária — Buscar Notícias</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --sidebar-bg: #0f0c29;
+  --sidebar-w: 240px;
+  --accent: #8b5cf6;
+  --accent2: #ec4899;
+  --accent-grad: linear-gradient(135deg, #8b5cf6, #ec4899);
+  --body-bg: #f6f7fb;
+  --card-bg: #ffffff;
+  --text-main: #1a1a2e;
+  --text-muted: #7b80a0;
+  --border: #e8eaf2;
+  --radius: 12px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Lato', sans-serif;
+  background: var(--body-bg);
+  color: var(--text-main);
+  display: flex;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.sidebar::before {
+  content: '';
+  position: absolute;
+  bottom: 120px; left: -60px;
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(139,92,246,0.35) 0%, transparent 70%);
+  pointer-events: none;
+}
+.sidebar::after {
+  content: '';
+  position: absolute;
+  bottom: 60px; right: -40px;
+  width: 160px; height: 160px;
+  background: radial-gradient(circle, rgba(236,72,153,0.22) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.logo-area {
+  padding: 28px 22px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.logo-mark {
+  width: 42px; height: 42px;
+  background: var(--accent-grad);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Sora', sans-serif;
+  font-size: 20px; font-weight: 700;
+  color: #fff;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 16px rgba(139,92,246,0.45);
+}
+
+.logo-text { font-family: 'Sora', sans-serif; }
+.logo-text strong { display: block; color: #fff; font-size: 15px; font-weight: 700; line-height: 1.2; }
+.logo-text span { color: rgba(255,255,255,0.45); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.nav {
+  flex: 1;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  color: rgba(255,255,255,0.5);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+  text-decoration: none;
+  position: relative;
+}
+
+.nav-item:hover {
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.85);
+}
+
+.nav-item.active {
+  background: var(--accent-grad);
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(139,92,246,0.38);
+}
+
+.nav-item svg { flex-shrink: 0; }
+
+.status-dot {
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+}
+
+.status-dot::before {
+  content: '';
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #22d3a5;
+  box-shadow: 0 0 6px rgba(34,211,165,0.7);
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── MAIN ── */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* TOPBAR */
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0;
+  z-index: 50;
+}
+
+.topbar-left h1 {
+  font-family: 'Sora', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.topbar-left p {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+
+.bell-btn {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.15s;
+  position: relative;
+}
+.bell-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.bell-badge {
+  position: absolute;
+  top: 4px; right: 4px;
+  width: 8px; height: 8px;
+  background: var(--accent2);
+  border-radius: 50%;
+  border: 1.5px solid #fff;
+}
+
+.user-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8f9fc;
+  border: 1.5px solid var(--border);
+  border-radius: 40px;
+  padding: 5px 14px 5px 5px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.user-pill:hover { border-color: var(--accent); }
+
+.avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--accent-grad);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff;
+}
+
+.user-info { line-height: 1.3; }
+.user-info strong { display: block; font-size: 12.5px; font-weight: 700; color: var(--text-main); }
+.user-info span { font-size: 11px; color: var(--text-muted); }
+
+/* ── CONTENT ── */
+.content {
+  padding: 28px 32px;
+  flex: 1;
+}
+
+/* FILTER BAR */
+.filter-bar {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 150px;
+}
+
+.filter-group label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  background: #f8f9fc;
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  height: 42px;
+  padding: 0 12px;
+  gap: 8px;
+  transition: border-color 0.15s;
+  cursor: pointer;
+}
+
+.field:focus-within { border-color: var(--accent); }
+.field svg { color: var(--text-muted); flex-shrink: 0; }
+
+.field select, .field input {
+  border: none; background: transparent;
+  font-family: 'Lato', sans-serif;
+  font-size: 13.5px; font-weight: 700;
+  color: var(--text-main);
+  outline: none;
+  flex: 1;
+  width: 100%;
+}
+
+.field select { cursor: pointer; }
+
+.icon-red { color: #e53e3e !important; }
+
+.clear-x {
+  background: none; border: none;
+  cursor: pointer; color: var(--text-muted);
+  display: flex; align-items: center;
+  padding: 0;
+  transition: color 0.15s;
+}
+.clear-x:hover { color: var(--text-main); }
+
+.filter-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-buscar {
+  background: var(--accent-grad);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  padding: 0 22px;
+  height: 42px;
+  font-family: 'Sora', sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 4px 16px rgba(139,92,246,0.35);
+  transition: opacity 0.15s, transform 0.15s;
+  white-space: nowrap;
+}
+.btn-buscar:hover { opacity: 0.9; transform: translateY(-1px); }
+/* RESULTS HEADER */
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.results-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.results-title h2 {
+  font-family: 'Sora', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.badge-count {
+  background: rgba(139,92,246,0.1);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(139,92,246,0.2);
+}
+/* TOPIC TABS */
+.topic-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.topic-tab {
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text-muted);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.topic-tab:hover {
+  border-color: rgba(139, 92, 246, 0.35);
+  color: var(--accent);
+}
+
+.topic-tab.active {
+  background: rgba(139, 92, 246, 0.12);
+  border-color: rgba(139, 92, 246, 0.45);
+  color: var(--accent);
+}
+
+/* NEWS LIST */
+.news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+
+.news-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+  cursor: pointer;
+}
+.news-card:last-child { border-bottom: none; }
+.news-card:hover { background: #fafbff; }
+
+.news-thumb {
+  width: 110px;
+  height: 74px;
+  border-radius: 9px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #e8eaf2;
+  overflow: hidden;
+}
+
+.news-thumb-placeholder {
+  width: 110px;
+  height: 74px;
+  border-radius: 9px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+.news-body { flex: 1; min-width: 0; }
+
+.news-body h3 {
+  font-family: 'Sora', sans-serif;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.4;
+  margin-bottom: 7px;
+}
+
+.news-body p {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.news-meta {
+  flex-shrink: 0;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 130px;
+}
+
+.source-name {
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.news-date {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.btn-ler {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(139,92,246,0.1);
+  color: var(--accent);
+  border: none;
+  border-radius: 7px;
+  padding: 7px 13px;
+  font-family: 'Lato', sans-serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.btn-ler:hover { background: rgba(139,92,246,0.18); }
+
+/* Source colors */
+.src-g1 { color: #e53e3e; }
+.src-globo { color: #e07b00; }
+.src-techtudo { color: #0066cc; }
+.src-exame { color: #c41230; }
+.src-estadao { color: #003b8e; }
+.src-uol { color: #0055a5; }
+.src-folha { color: #cc0000; }
+.src-valor { color: #006633; }
+.src-cnn { color: #cc0000; }
+.src-band { color: #e8a000; }
+
+/* PAGINATION */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 22px;
+  border-top: 1px solid var(--border);
+  background: #fff;
+  border-radius: 0 0 var(--radius) var(--radius);
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.page-buttons {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.page-btn {
+  width: 32px; height: 32px;
+  border-radius: 7px;
+  border: 1.5px solid var(--border);
+  background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 13px; font-weight: 700;
+  color: var(--text-muted);
+  transition: all 0.15s;
+}
+.page-btn:hover { border-color: var(--accent); color: var(--accent); }
+.page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.page-btn.arrow { font-size: 16px; }
+.page-btn:disabled { opacity: 0.3; cursor: default; }
+
+/* ── PROGRESS ── */
+.progress-bar-wrap {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  margin-bottom: 28px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  display: none;
+}
+
+.progress-bar-wrap p {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.progress-track {
+  height: 6px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent-grad);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+.progress-terms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.progress-term {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  color: var(--text-muted);
+  background: #f8f9fc;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.progress-term.loading {
+  background: rgba(139,92,246,0.08);
+  border-color: var(--accent);
+  color: var(--accent);
+  animation: pulse-term 1.5s infinite;
+}
+
+.progress-term.done {
+  background: rgba(34,197,94,0.1);
+  border-color: #22c55e;
+  color: #16a34a;
+}
+
+@keyframes pulse-term {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Empty state */
+.news-empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+  font-size: 14px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.news-empty svg { margin: 0 auto 12px; display: block; opacity: 0.35; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo-area">
+    <div class="logo-mark">R</div>
+    <div class="logo-text">
+      <strong>RONDA<br>DIÁRIA</strong>
+      <span>Monitoramento de Notícias</span>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a class="nav-item active" href="index.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" href="index.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Buscar Notícias
+    </a>
+    <a class="nav-item" href="cadastro.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      Empresas/Clientes
+    </a>
+    <a class="nav-item" href="empresas.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 10h10M7 14h6"/></svg>
+      Empresas no Banco
+    </a>
+    <a class="nav-item" href="#">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Termos de Pesquisa
+    </a>
+    <a class="nav-item" href="#">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      Fontes de Pesquisa
+    </a>
+    <a class="nav-item" href="#">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Relatórios
+    </a>
+    <a class="nav-item" href="#">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Configurações
+    </a>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1>Buscar Notícias</h1>
+      <p>Acompanhe as últimas notícias sobre seus clientes e termos monitorados.</p>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label>Cliente</label>
+        <div class="field">
+          <svg width="14" height="14" class="icon-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          <select id="clienteSelect">
+            <option value="">Carregando empresas...</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>Período</label>
+        <div class="field" style="margin-bottom:8px;">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <select id="periodoSelect">
+            <option value="1d">Últimas 24 horas</option>
+            <option value="1w">Última semana</option>
+            <option value="1m">Último mês</option>
+            <option value="1y">Último ano</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-group" style="max-width:280px">
+        <label>Termo de pesquisa</label>
+        <div class="field">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="searchInput" placeholder="Coleção de Verão" value="Coleção de Verão"/>
+          <button class="clear-x" onclick="document.getElementById('searchInput').value=''">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn-buscar" id="btnBuscar" type="button">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Buscar notícias
+        </button>
+      </div>
+    </div>
+
+    <!-- PROGRESS BAR -->
+    <div class="progress-bar-wrap" id="progressWrap">
+      <p id="progressText">Iniciando busca...</p>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-terms" id="progressTerms"></div>
+    </div>
+
+    <!-- RESULTS HEADER -->
+    <div class="results-header">
+      <div class="results-title">
+        <h2>Resultados da busca</h2>
+        <span class="badge-count">18 notícias encontradas</span>
+      </div>
+    </div>
+
+    <div class="topic-tabs" id="topicTabs" aria-label="Abas de tópicos"></div>
+
+    <!-- NEWS LIST -->
+    <div class="news-list" id="newsList"></div>
+
+    <!-- PAGINATION -->
+    <div class="pagination" id="paginationBar">
+      <span id="pageInfo">Mostrando 1 a 6 de 18 notícias</span>
+      <div class="page-buttons" id="pageButtons"></div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  const SERPER_API_KEY = 'ef4f1343d9f68d7e7869f56746d76b5edb594a9a';
+  const SERPER_URL = 'https://google.serper.dev/search';
+
+  const empresaSelect = document.getElementById('clienteSelect');
+  const searchInput = document.getElementById('searchInput');
+  const periodoSelect = document.getElementById('periodoSelect');
+  const btnBuscar = document.getElementById('btnBuscar');
+  const newsList = document.getElementById('newsList');
+  const badgeCount = document.querySelector('.badge-count');
+  const pageInfo = document.getElementById('pageInfo');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressText = document.getElementById('progressText');
+  const progressFill = document.getElementById('progressFill');
+  const progressTerms = document.getElementById('progressTerms');
+  const topicTabs = document.getElementById('topicTabs');
+
+  let empresas = [];
+  let topicoAtivo = null;
+
+  function splitLista(valor) {
+    return String(valor || '')
+      .split(',')
+      .map(item => item.trim())
+      .filter(Boolean);
+  }
+
+  function montarQueries(empresa) {
+    const termos = splitLista(empresa.termos);
+    const nomes = splitLista(empresa.nomes);
+    const base = [empresa.nome, ...nomes, ...termos].filter(Boolean);
+    return [...new Set(base)];
+  }
+
+  function montarTopicos(empresa) {
+    if (!empresa) return [];
+
+    const nomesAssociados = splitLista(empresa.nomes);
+    const termos = splitLista(empresa.termos);
+    const concorrentes = splitLista(empresa.concorrentes);
+
+    const topicos = [
+      {
+        key: 'empresa',
+        label: 'Empresa',
+        queries: [empresa.nome, ...nomesAssociados].filter(Boolean)
+      },
+      {
+        key: 'acao',
+        label: 'Ação',
+        queries: empresa.bolsa ? [empresa.bolsa] : []
+      },
+      {
+        key: 'concorrentes',
+        label: 'Concorrentes',
+        queries: concorrentes
+      },
+      {
+        key: 'termos',
+        label: 'Termos',
+        queries: termos
+      }
+    ];
+
+    return topicos.filter(item => item.queries.length > 0);
+  }
+
+  function renderizarTopicos(empresa) {
+    topicTabs.innerHTML = '';
+
+    if (!empresa) {
+      topicTabs.style.display = 'none';
+      topicoAtivo = null;
+      return;
+    }
+
+    const topicos = montarTopicos(empresa);
+
+    if (!topicos.length) {
+      topicTabs.style.display = 'none';
+      topicoAtivo = null;
+      return;
+    }
+
+    topicTabs.style.display = 'flex';
+    topicos.forEach((topico) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `topic-tab ${topico.key === topicoAtivo ? 'active' : ''}`;
+      button.textContent = topico.label;
+      button.addEventListener('click', () => {
+        topicoAtivo = topico.key;
+        renderizarTopicos(empresa);
+        buscarNoticias(topico.queries);
+      });
+      topicTabs.appendChild(button);
+    });
+
+    if (!topicoAtivo || !topicos.some(item => item.key === topicoAtivo)) {
+      topicoAtivo = topicos[0].key;
+      topicTabs.firstElementChild?.classList.add('active');
+    }
+  }
+
+  function formatarFonte(link) {
+    try {
+      return new URL(link).hostname.replace('www.', '');
+    } catch {
+      return 'Fonte';
+    }
+  }
+
+  function renderizarResultados(itens) {
+    if (!itens.length) {
+      newsList.innerHTML = '<div class="news-empty">Nenhuma notícia encontrada para os termos selecionados.</div>';
+      badgeCount.textContent = '0 notícias encontradas';
+      pageInfo.textContent = 'Nenhum resultado para exibir.';
+      return;
+    }
+
+    newsList.innerHTML = itens.map((item, index) => `
+      <article class="news-card" onclick="window.open('${item.link}', '_blank', 'noopener,noreferrer')" aria-label="Abrir notícia ${index + 1}">
+        <img class="news-thumb" src="${item.imageUrl || item.thumbnail || 'https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&w=600&q=80'}" alt="Capa da notícia" />
+        <div class="news-body">
+          <h3>${item.title}</h3>
+          <p>${item.snippet || 'Nenhuma descrição disponível.'}</p>
+        </div>
+        <div class="news-meta">
+          <span class="source-name">${formatarFonte(item.link)}</span>
+          <span class="news-date">${item.date || 'Recente'}</span>
+          <button class="btn-ler" type="button">Abrir notícia</button>
+        </div>
+      </article>
+    `).join('');
+
+    badgeCount.textContent = `${itens.length} notícias encontradas`;
+    pageInfo.textContent = `Mostrando ${itens.length} resultado${itens.length === 1 ? '' : 's'} da busca.`;
+  }
+
+  async function buscarSerper(query) {
+    const periodo = periodoSelect.value || '1d';
+    const response = await fetch(SERPER_URL, {
+      method: 'POST',
+      headers: {
+        'X-API-KEY': SERPER_API_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        q: `${query} -site:youtube.com -site:instagram.com -site:tiktok.com`,
+        type: 'news',
+        num: 10,
+        gl: 'BR',
+        hl: 'pt-BR',
+        tbs: periodo === '1d' ? 'qdr:d' : periodo === '1w' ? 'qdr:w' : periodo === '1m' ? 'qdr:m' : 'qdr:y'
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erro na API Serper: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return Array.isArray(data.news) ? data.news : [];
+  }
+
+  async function buscarNoticias(queriesOverride = null) {
+    const empresaSelecionada = empresas.find(item => String(item.id_empresa) === String(empresaSelect.value));
+    const termoManual = searchInput.value.trim();
+
+    const topicos = empresaSelecionada ? montarTopicos(empresaSelecionada) : [];
+    const queries = Array.isArray(queriesOverride)
+      ? queriesOverride
+      : (queriesOverride
+          ? [queriesOverride]
+          : (topicoAtivo && topicos.some(item => item.key === topicoAtivo)
+              ? topicos.find(item => item.key === topicoAtivo).queries
+              : (empresaSelecionada ? montarQueries(empresaSelecionada) : (termoManual ? [termoManual] : []))));
+
+    if (!queries.length) {
+      newsList.innerHTML = '<div class="news-empty">Selecione uma empresa ou informe um termo para pesquisar.</div>';
+      return;
+    }
+
+    progressWrap.style.display = 'block';
+    progressFill.style.width = '10%';
+    progressText.textContent = 'Buscando notícias...';
+    progressTerms.innerHTML = '';
+
+    const itens = [];
+
+    for (let i = 0; i < queries.length; i += 1) {
+      const query = queries[i];
+      const chip = document.createElement('span');
+      chip.className = 'progress-term loading';
+      chip.textContent = query;
+      progressTerms.appendChild(chip);
+
+      progressText.textContent = `Buscando notícias para "${query}"...`;
+      progressFill.style.width = `${Math.min(95, 10 + ((i + 1) / Math.max(queries.length, 1)) * 80)}%`;
+
+      try {
+        const resultados = await buscarSerper(query);
+        resultados.forEach(item => itens.push({
+          title: item.title,
+          link: item.link,
+          snippet: item.snippet,
+          date: item.date || 'Recente',
+          thumbnail: item.imageUrl || item.thumbnail || ''
+        }));
+
+        chip.className = 'progress-term done';
+      } catch (erro) {
+        chip.className = 'progress-term';
+        chip.textContent = `${query} (erro)`;
+        console.error('Erro ao buscar notícia:', erro);
+      }
+    }
+
+    const unicos = Array.from(new Map(itens.map(item => [item.link, item])).values());
+    renderizarResultados(unicos);
+    progressFill.style.width = '100%';
+    progressText.textContent = `Busca concluída: ${unicos.length} notícias encontradas.`;
+  }
+
+  async function carregarEmpresas() {
+    try {
+      const resposta = await fetch('/empresas');
+      const dados = await resposta.json();
+
+      empresas = Array.isArray(dados) ? dados : [];
+
+      empresaSelect.innerHTML = '<option value="">Selecione uma empresa</option>' +
+        empresas.map(empresa => `<option value="${empresa.id_empresa}">${empresa.nome}</option>`).join('');
+
+      if (empresas.length) {
+        empresaSelect.value = String(empresas[0].id_empresa);
+        searchInput.value = empresas[0].nome;
+        renderizarTopicos(empresas[0]);
+        topicoAtivo = montarTopicos(empresas[0])[0]?.key || null;
+        buscarNoticias(montarTopicos(empresas[0])[0]?.queries || [empresas[0].nome]);
+      } else {
+        renderizarTopicos(null);
+      }
+    } catch (erro) {
+      console.error('Erro ao carregar empresas:', erro);
+      empresaSelect.innerHTML = '<option value="">Nenhuma empresa disponível</option>';
+    }
+  }
+
+  btnBuscar.addEventListener('click', () => {
+    const topicos = montarTopicos(empresas.find(item => String(item.id_empresa) === String(empresaSelect.value)) || null);
+    const ativo = topicos.find(item => item.key === topicoAtivo);
+    buscarNoticias(ativo ? ativo.queries : null);
+  });
+
+  searchInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      const topicos = montarTopicos(empresas.find(item => String(item.id_empresa) === String(empresaSelect.value)) || null);
+      const ativo = topicos.find(item => item.key === topicoAtivo);
+      buscarNoticias(ativo ? ativo.queries : null);
+    }
+  });
+
+  empresaSelect.addEventListener('change', () => {
+    const selecionada = empresas.find(item => String(item.id_empresa) === String(empresaSelect.value));
+    if (selecionada) {
+      searchInput.value = selecionada.nome;
+      renderizarTopicos(selecionada);
+      topicoAtivo = montarTopicos(selecionada)[0]?.key || null;
+      buscarNoticias(montarTopicos(selecionada)[0]?.queries || [selecionada.nome]);
+    } else {
+      renderizarTopicos(null);
+    }
+  });
+
+  carregarEmpresas();
+</script>
+</body>
+</html>

@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ronda Diária — Empresas / Clientes</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --sidebar-bg: #0f0c29;
+  --sidebar-w: 240px;
+  --accent: #8b5cf6;
+  --accent2: #ec4899;
+  --accent-grad: linear-gradient(135deg, #8b5cf6, #ec4899);
+  --body-bg: #f6f7fb;
+  --card-bg: #ffffff;
+  --text-main: #1a1a2e;
+  --text-muted: #7b80a0;
+  --border: #e8eaf2;
+  --radius: 12px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Lato', sans-serif;
+  background: var(--body-bg);
+  color: var(--text-main);
+  display: flex;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.sidebar::before {
+  content: '';
+  position: absolute;
+  bottom: 120px; left: -60px;
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(139,92,246,0.35) 0%, transparent 70%);
+  pointer-events: none;
+}
+.sidebar::after {
+  content: '';
+  position: absolute;
+  bottom: 60px; right: -40px;
+  width: 160px; height: 160px;
+  background: radial-gradient(circle, rgba(236,72,153,0.22) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.logo-area {
+  padding: 28px 22px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.logo-mark {
+  width: 42px; height: 42px;
+  background: var(--accent-grad);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Sora', sans-serif;
+  font-size: 20px; font-weight: 700;
+  color: #fff;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 16px rgba(139,92,246,0.45);
+}
+
+.logo-text { font-family: 'Sora', sans-serif; }
+.logo-text strong { display: block; color: #fff; font-size: 15px; font-weight: 700; line-height: 1.2; }
+.logo-text span { color: rgba(255,255,255,0.45); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.nav {
+  flex: 1;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  color: rgba(255,255,255,0.5);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+  text-decoration: none;
+}
+
+.nav-item:hover {
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.85);
+}
+
+.nav-item.active {
+  background: var(--accent-grad);
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(139,92,246,0.38);
+}
+
+.nav-item svg { flex-shrink: 0; }
+
+/* ── MAIN ── */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* TOPBAR */
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0;
+  z-index: 50;
+}
+
+.topbar-left h1 {
+  font-family: 'Sora', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.topbar-left p {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+/* ── CONTENT ── */
+.content {
+  padding: 28px 32px;
+  flex: 1;
+}
+
+/* ── FORM CARD ── */
+.form-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  padding: 28px 32px;
+  max-width: 780px;
+  margin-bottom: 28px;
+}
+
+.section-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.field-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.field-wrap.full {
+  grid-column: 1 / -1;
+}
+
+.field-wrap label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+/* FIELD (igual ao index) */
+.field {
+  display: flex;
+  align-items: center;
+  background: #f8f9fc;
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  height: 42px;
+  padding: 0 12px;
+  gap: 8px;
+  transition: border-color 0.15s;
+}
+
+.field:focus-within { border-color: var(--accent); }
+.field svg { color: var(--text-muted); flex-shrink: 0; }
+
+.field input, .field select {
+  border: none;
+  background: transparent;
+  font-family: 'Lato', sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-main);
+  outline: none;
+  flex: 1;
+  width: 100%;
+}
+
+.field input::placeholder {
+  font-weight: 400;
+  color: #b0b4cc;
+}
+
+/* ── CHIP FIELD ── */
+.chip-field {
+  background: #f8f9fc;
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  padding: 10px 12px;
+  transition: border-color 0.15s;
+  min-height: 42px;
+}
+
+.chip-field:focus-within { border-color: var(--accent); }
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.chip-row:empty { margin-bottom: 0; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(139,92,246,0.1);
+  color: var(--accent);
+  border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 20px;
+  padding: 4px 10px 4px 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.btn-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+  padding: 0;
+}
+.btn-remove:hover { opacity: 1; }
+
+.chip-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.chip-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: 'Lato', sans-serif;
+  font-size: 13.5px;
+  color: var(--text-main);
+  outline: none;
+}
+.chip-input::placeholder { color: #b0b4cc; }
+
+.btn-add {
+  background: var(--accent-grad);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 6px 14px;
+  font-family: 'Sora', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+.btn-add:hover { opacity: 0.85; }
+
+/* ── FORM ACTIONS ── */
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.btn-cancel {
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  padding: 0 20px;
+  height: 42px;
+  font-family: 'Lato', sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-cancel:hover { border-color: var(--text-muted); color: var(--text-main); }
+
+.btn-submit {
+  background: var(--accent-grad);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  padding: 0 24px;
+  height: 42px;
+  font-family: 'Sora', sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(139,92,246,0.35);
+  transition: opacity 0.15s, transform 0.15s;
+}
+.btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* ── EMPRESA LIST ── */
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.list-header h2 {
+  font-family: 'Sora', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.badge-count {
+  background: rgba(139,92,246,0.1);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(139,92,246,0.2);
+}
+
+.empresa-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  max-width: 780px;
+}
+
+.empresa-item {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.empresa-item:last-child { border-bottom: none; }
+.empresa-item:hover { background: #fafbff; }
+
+.empresa-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: var(--accent-grad);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Sora', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(139,92,246,0.3);
+}
+
+.empresa-info { flex: 1; min-width: 0; }
+.empresa-info strong {
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  display: block;
+  margin-bottom: 4px;
+}
+.empresa-info .meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.meta-dot { color: var(--border); }
+
+.empresa-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+.tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(139,92,246,0.08);
+  border: 1px solid rgba(139,92,246,0.15);
+  border-radius: 20px;
+  padding: 2px 9px;
+}
+
+.empresa-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-del {
+  background: rgba(236,72,153,0.1);
+  color: var(--accent2);
+  border: none;
+  border-radius: 7px;
+  padding: 7px 13px;
+  font-family: 'Lato', sans-serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn-del:hover { background: rgba(236,72,153,0.2); }
+
+.empty-list {
+  text-align: center;
+  padding: 40px 24px;
+  color: var(--text-muted);
+  font-size: 14px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+}
+.empty-list svg { margin: 0 auto 12px; display: block; opacity: 0.35; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 28px; right: 28px;
+  background: #1a1a2e;
+  color: #fff;
+  border-radius: 10px;
+  padding: 14px 20px;
+  font-size: 13.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  z-index: 9999;
+  transform: translateY(20px);
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+  min-width: 240px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-left: 4px solid #22d3a5; }
+.toast.error { border-left: 4px solid #ec4899; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo-area">
+    <div class="logo-mark">R</div>
+    <div class="logo-text">
+      <strong>RONDA<br>DIÁRIA</strong>
+      <span>Monitoramento de Notícias</span>
+    </div>
+  </div>
+  <nav class="nav">
+    <a class="nav-item" href="index.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" href="index.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Buscar Notícias
+    </a>
+    <a class="nav-item active" href="cadastro.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      Empresas/Clientes
+    </a>
+    <a class="nav-item" href="empresas.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 10h10M7 14h6"/></svg>
+      Empresas no Banco
+    </a>
+    <a class="nav-item" href="#">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Termos de Pesquisa
+    </a>
+    <a class="nav-item" href="#">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      Fontes de Pesquisa
+    </a>
+    <a class="nav-item" href="#">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Relatórios
+    </a>
+    <a class="nav-item" href="#">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Configurações
+    </a>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1>Empresas / Clientes</h1>
+      <p>Cadastre empresas e os termos de busca monitorados para cada uma.</p>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- FORM CARD -->
+    <div class="form-card">
+      <div class="section-title">Dados da empresa</div>
+
+      <div class="form-grid">
+        <div class="field-wrap">
+          <label>Nome da empresa</label>
+          <div class="field">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 21h18M9 21V7l6-4v18"/><path d="M13 21V11h4v10"/></svg>
+            <input type="text" id="empresaNome" placeholder="Ex: Renner S.A."/>
+          </div>
+        </div>
+
+        <div class="field-wrap">
+          <label>Ação na bolsa</label>
+          <div class="field">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <input type="text" id="empresaBolsa" placeholder="Ex: LREN3"/>
+          </div>
+        </div>
+
+        <div class="field-wrap">
+          <label>País</label>
+          <div class="field">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <input type="text" id="empresaPais" placeholder="Ex: Brasil"/>
+          </div>
+        </div>
+
+        <div class="field-wrap">
+          <label>Ramo / Setor</label>
+          <div class="field">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+            <input type="text" id="empresaRamo" placeholder="Ex: Varejo de moda"/>
+          </div>
+        </div>
+
+        <div class="field-wrap full">
+          <label>Concorrentes</label>
+          <div class="field">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <input type="text" id="empresaConcorrente" placeholder="Ex: C&A, Riachuelo, Marisa"/>
+          </div>
+        </div>
+
+        <!-- CHIP: Nomes monitorados -->
+        <div class="field-wrap full">
+          <label>Nomes / variações monitoradas</label>
+          <div class="chip-field">
+            <div class="chip-row" id="listaNomes"></div>
+            <div class="chip-input-row">
+              <input class="chip-input" type="text" id="nomeInput" placeholder="Ex: Lojas Renner, Renner S.A. — pressione Enter ou clique em Adicionar"/>
+              <button class="btn-add" type="button" onclick="adicionarChip('nomeInput','listaNomes')">+ Adicionar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHIP: Termos de pesquisa -->
+        <div class="field-wrap full">
+          <label>Termos de pesquisa</label>
+          <div class="chip-field">
+            <div class="chip-row" id="listaTermos"></div>
+            <div class="chip-input-row">
+              <input class="chip-input" type="text" id="termoInput" placeholder="Ex: Coleção de Verão, ESG, LREN3 — pressione Enter ou clique em Adicionar"/>
+              <button class="btn-add" type="button" onclick="adicionarChip('termoInput','listaTermos')">+ Adicionar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="form-actions">
+        <button class="btn-cancel" type="button" onclick="limparForm()">Limpar</button>
+        <button class="btn-submit" type="button" onclick="salvarEmpresa()">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Salvar empresa
+        </button>
+      </div>
+    </div>
+
+    <!-- EMPRESA LIST -->
+    <div class="list-header">
+      <h2>Empresas cadastradas</h2>
+      <span class="badge-count" id="badgeCount">0 empresas</span>
+    </div>
+
+    <div class="empresa-list" id="empresaList">
+      <div class="empty-list">
+        <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        Nenhuma empresa cadastrada ainda.
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  function showToast(msg, tipo = 'success') {
+    const t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.className = `toast ${tipo} show`;
+    setTimeout(() => { t.className = `toast ${tipo}`; }, 3200);
+  }
+
+  function splitLista(valor) {
+    return String(valor || '').split(/\n|,/).map(s => s.trim()).filter(Boolean);
+  }
+
+  /* ── CHIPS ── */
+  function adicionarChip(inputId, listaId) {
+    const input = document.getElementById(inputId);
+    const valor = input.value.trim();
+    if (!valor) return;
+
+    const lista = document.getElementById(listaId);
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.dataset.valor = valor;
+    chip.innerHTML = `${valor}<button class="btn-remove" type="button" aria-label="Remover">×</button>`;
+    chip.querySelector('.btn-remove').addEventListener('click', () => chip.remove());
+    lista.appendChild(chip);
+
+    input.value = '';
+    input.focus();
+  }
+
+  function getChips(listaId) {
+    return Array.from(document.querySelectorAll(`#${listaId} .chip`)).map(c => c.dataset.valor);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    ['nomeInput', 'termoInput'].forEach(id => {
+      const listaId = id === 'nomeInput' ? 'listaNomes' : 'listaTermos';
+      document.getElementById(id)?.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); adicionarChip(id, listaId); }
+      });
+    });
+
+    carregarEmpresas();
+  });
+
+  /* ── SALVAR ── */
+  async function salvarEmpresa() {
+    const nome = document.getElementById('empresaNome').value.trim();
+    if (!nome) { showToast('Informe o nome da empresa.', 'error'); return; }
+
+    const dadosEmpresa = {
+      nome,
+      bolsa:       document.getElementById('empresaBolsa').value.trim(),
+      pais:        document.getElementById('empresaPais').value.trim(),
+      ramo:        document.getElementById('empresaRamo').value.trim(),
+      concorrente: document.getElementById('empresaConcorrente').value.trim(),
+      nomes:   getChips('listaNomes'),
+      termos:  getChips('listaTermos')
+    };
+
+    try {
+      const resposta = await fetch('/empresas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dadosEmpresa)
+      });
+
+      const resultado = await resposta.json();
+      if (!resposta.ok || !resultado.sucesso) throw new Error(resultado.mensagem || 'Erro ao cadastrar empresa.');
+
+      showToast(`"${nome}" cadastrada com sucesso!`, 'success');
+      limparForm();
+      await carregarEmpresas();
+    } catch (erro) {
+      console.error('Erro ao salvar empresa:', erro);
+      showToast(erro.message || 'Erro ao conectar com o servidor.', 'error');
+    }
+  }
+
+  /* ── LIMPAR ── */
+  function limparForm() {
+    ['empresaNome','empresaBolsa','empresaPais','empresaRamo','empresaConcorrente'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('listaNomes').innerHTML = '';
+    document.getElementById('listaTermos').innerHTML = '';
+    document.getElementById('nomeInput').value = '';
+    document.getElementById('termoInput').value = '';
+  }
+
+  /* ── CARREGAR LISTA ── */
+  async function carregarEmpresas() {
+    try {
+      const resposta = await fetch('/empresas');
+      const empresas = await resposta.json();
+      renderLista(Array.isArray(empresas) ? empresas : []);
+    } catch (erro) {
+      console.error('Erro ao carregar empresas:', erro);
+      renderLista([]);
+    }
+  }
+
+  function renderLista(empresas) {
+    const lista = document.getElementById('empresaList');
+    const badge = document.getElementById('badgeCount');
+
+    badge.textContent = `${empresas.length} empresa${empresas.length !== 1 ? 's' : ''}`;
+
+    if (!empresas.length) {
+      lista.innerHTML = `
+        <div class="empty-list">
+          <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+          Nenhuma empresa cadastrada ainda.
+        </div>`;
+      return;
+    }
+
+    lista.innerHTML = empresas.map(emp => {
+      const inicial = (emp.nome || '?')[0].toUpperCase();
+      const metaItems = [emp.ramo, emp.pais, emp.bolsa].filter(Boolean);
+      const termos = Array.isArray(emp.termos) ? emp.termos : splitLista(emp.termos);
+      const nomes  = Array.isArray(emp.nomes)  ? emp.nomes  : splitLista(emp.nomes);
+      const tags   = [...nomes, ...termos].slice(0, 6);
+
+      return `
+        <div class="empresa-item">
+          <div class="empresa-icon">${inicial}</div>
+          <div class="empresa-info">
+            <strong>${emp.nome}</strong>
+            <div class="meta">
+              ${metaItems.map((m, i) => `${i > 0 ? '<span class="meta-dot">·</span>' : ''}${m}`).join('')}
+            </div>
+            ${tags.length ? `<div class="empresa-tags">${tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>` : ''}
+          </div>
+          <div class="empresa-actions">
+            <button class="btn-del" onclick="excluirEmpresa('${emp.id_empresa}')">
+              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              Excluir
+            </button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  async function excluirEmpresa(id) {
+    if (!confirm('Excluir esta empresa?')) return;
+    try {
+      await fetch(`/empresas/${id}`, { method: 'DELETE' });
+      showToast('Empresa removida.', 'error');
+      await carregarEmpresas();
+    } catch (erro) {
+      console.error('Erro ao excluir:', erro);
+      showToast('Erro ao excluir empresa.', 'error');
+    }
+  }
+</script>
+</body>
+</html>

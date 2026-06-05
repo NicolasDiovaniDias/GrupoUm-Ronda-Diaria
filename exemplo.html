@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pesquisa Renner - Serper API</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 20px;
+      background-color: #f4f4f9;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #resultado {
+      margin-top: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      white-space: pre-wrap;
+      /* Mantém a formatação do JSON */
+      max-height: 500px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <label for="termo">Termo da busca</label>
+  <input id="termo" value="Renner notícias" style="width: 320px; margin-bottom: 12px; padding: 8px;" />
+
+  <label for="periodo">Período</label>
+  <select id="periodo" style="width: 180px; margin-bottom: 12px; padding: 8px;">
+    <option value="1d">Últimas 24 horas</option>
+    <option value="1w">Última semana</option>
+    <option value="1m">Último mês</option>
+    <option value="1y">Último ano</option>
+  </select>
+
+  <button onclick="buscarNoticias()">Buscar notícias</button>
+
+  <h3>Resultado da API (JSON):</h3>
+  <pre id="resultado">O resultado aparecerá aqui...</pre>
+
+  <script>
+    const SERPER_API_KEY = 'ef4f1343d9f68d7e7869f56746d76b5edb594a9a';
+    const SERPER_URL = 'https://google.serper.dev/search';
+
+    async function buscarNoticias() {
+      const resultadoDiv = document.getElementById('resultado');
+      const termo = document.getElementById('termo').value.trim() || 'Renner notícias';
+      const periodo = document.getElementById('periodo').value || '1d';
+
+      resultadoDiv.textContent = 'Carregando notícias...';
+
+      try {
+        const query = `${termo} -site:youtube.com -site:instagram.com -site:tiktok.com`;
+        const tbs = periodo === '1d' ? 'qdr:d' : periodo === '1w' ? 'qdr:w' : periodo === '1m' ? 'qdr:m' : 'qdr:y';
+
+        const response = await fetch(SERPER_URL, {
+          method: 'POST',
+          headers: {
+            'X-API-KEY': SERPER_API_KEY,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            q: query,
+            type: 'news',
+            num: 10,
+            gl: 'BR',
+            hl: 'pt-BR',
+            tbs: tbs
+          })
+        });                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+
+        if (!response.ok) {
+          throw new Error(`Erro na API Serper: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const noticias = Array.isArray(data.news) ? data.news : [];
+
+        resultadoDiv.textContent = JSON.stringify({
+          query: termo,
+          total: noticias.length,
+          noticias
+        }, null, 2);
+
+        console.log('Notícias encontradas:', noticias);
+      } catch (error) {
+        resultadoDiv.textContent = 'Erro na requisição: ' + (error?.message || error);
+        console.error('Falha na integração:', error);
+      }
+    }
+  </script>
+
+</body>
+
+</html>
