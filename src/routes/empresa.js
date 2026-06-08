@@ -46,6 +46,102 @@ router.get('/', async (req, res) => {
 
 
 // ===============================================
+// GET /empresas/:id -> Buscar detalhes da empresa
+// ===============================================
+router.get('/:id', async (req, res) => {
+
+    const { id } = req.params;
+
+    try {
+
+        // Busca dados principais da empresa.
+        const [empresas] = await pool.execute(
+
+            `SELECT
+                id_empresa,
+                nome,
+                bolsa,
+                pais,
+                ramo,
+                criado_em
+             FROM empresa
+             WHERE id_empresa = ?`,
+
+            [id]
+        );
+
+        if (empresas.length === 0) {
+
+            return res.status(404).json({
+                sucesso: false,
+                mensagem: 'Empresa não encontrada.'
+            });
+        }
+
+        const empresa = empresas[0];
+
+        // Busca nomes associados.
+        const [nomes] = await pool.execute(
+
+            `SELECT
+                id_nome_associado,
+                nome
+             FROM nome_associado
+             WHERE empresa_id = ?`,
+
+            [id]
+        );
+
+        // Busca termos associados.
+        const [termos] = await pool.execute(
+
+            `SELECT
+                id_termo_associado,
+                nome
+             FROM termo_associado
+             WHERE empresa_id = ?`,
+
+            [id]
+        );
+
+        // Busca empresas concorrentes.
+        const [concorrentes] = await pool.execute(
+
+            `SELECT
+                e.id_empresa,
+                e.nome,
+                e.bolsa,
+                e.pais,
+                e.ramo
+             FROM empresa_concorrente ec
+             INNER JOIN empresa e
+                ON e.id_empresa = ec.empresa_rival_id
+             WHERE ec.empresa_principal_id = ?`,
+
+            [id]
+        );
+
+        res.status(200).json({
+            sucesso: true,
+            empresa,
+            nomes,
+            termos,
+            concorrentes
+        });
+
+    } catch (erro) {
+
+        console.error('Erro ao buscar detalhes da empresa:', erro);
+
+        res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro ao buscar detalhes da empresa.'
+        });
+    }
+});
+
+
+// ===============================================
 // POST /empresas -> Cadastrar empresa
 // ===============================================
 router.post('/', async (req, res) => {
