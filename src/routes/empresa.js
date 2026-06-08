@@ -1,93 +1,191 @@
+// Importa o Express e cria o roteador das rotas de empresa.
 const express = require('express');
 const router = express.Router();
+
+// Importa a conexão com o banco MySQL.
 const pool = require('../config/db');
 
+
+// ===============================================
+// GET /empresas -> Listar empresas
+// ===============================================
+router.get('/', async (req, res) => {
+
+    try {
+
+        // Busca empresas cadastradas no banco.
+        const [empresas] = await pool.execute(
+            `SELECT 
+                id_empresa,
+                nome,
+                bolsa,
+                pais,
+                ramo,
+                criado_em
+             FROM empresa
+             ORDER BY criado_em DESC`
+        );
+
+        // Retorna os dados em JSON.
+        res.status(200).json({
+            sucesso: true,
+            total: empresas.length,
+            empresas: empresas
+        });
+
+    } catch (erro) {
+
+        console.error('Erro ao listar empresas:', erro);
+
+        res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro ao listar empresas.'
+        });
+    }
+});
+
+
+// ===============================================
+// POST /empresas -> Cadastrar empresa
+// ===============================================
 router.post('/', async (req, res) => {
+
+    // Dados enviados pelo frontend.
     const { nome, bolsa, pais, ramo, concorrente, nomes, termos } = req.body;
 
-    console.log('Dados recebidos:', req.body);
-    console.log('Concorrente recebida:', concorrente);
-
+    // Validação básica.
     if (!nome || nome.trim() === '') {
+
         return res.status(400).json({
             sucesso: false,
             mensagem: 'O nome da empresa é obrigatório.'
         });
     }
 
+    // Abre conexão com o banco para usar transação.
     const connection = await pool.getConnection();
 
     try {
+
+        // Inicia transação.
         await connection.beginTransaction();
 
+        // Cadastra empresa principal.
         const [resultadoEmpresa] = await connection.execute(
+
             `INSERT INTO empresa (nome, bolsa, pais, ramo)
              VALUES (?, ?, ?, ?)`,
+
             [nome, bolsa || null, pais || null, ramo || null]
         );
 
+        // ID da empresa criada.
         const empresaId = resultadoEmpresa.insertId;
 
+
+        // ===============================================
+        // CONCORRENTE
+        // ===============================================
+
         if (concorrente && concorrente.trim() !== '') {
+
             const nomeConcorrente = concorrente.trim();
 
+            // Verifica se a concorrente já existe.
             const [concorrentesEncontradas] = await connection.execute(
+
                 `SELECT id_empresa 
-                FROM empresa 
-                WHERE nome = ?
-                LIMIT 1`,
+                 FROM empresa 
+                 WHERE nome = ?
+                 LIMIT 1`,
+
                 [nomeConcorrente]
             );
 
             let concorrenteId;
 
+            // Usa empresa existente ou cria nova.
             if (concorrentesEncontradas.length > 0) {
+
                 concorrenteId = concorrentesEncontradas[0].id_empresa;
+
             } else {
+
                 const [resultadoConcorrente] = await connection.execute(
+
                     `INSERT INTO empresa (nome)
-                    VALUES (?)`,
+                     VALUES (?)`,
+
                     [nomeConcorrente]
                 );
 
                 concorrenteId = resultadoConcorrente.insertId;
             }
 
+            // Evita relacionamento com ela mesma.
             if (concorrenteId !== empresaId) {
+
                 await connection.execute(
-                    `INSERT INTO empresa_concorrente (empresa_principal_id, empresa_rival_id)
+
+                    `INSERT INTO empresa_concorrente 
+                    (empresa_principal_id, empresa_rival_id)
                     VALUES (?, ?)`,
+
                     [empresaId, concorrenteId]
                 );
             }
         }
 
+
+        // ===============================================
+        // NOMES ASSOCIADOS
+        // ===============================================
+
         if (Array.isArray(nomes)) {
+
             for (const nomeAssociado of nomes) {
+
                 if (nomeAssociado.trim() !== '') {
+
                     await connection.execute(
-                        `INSERT INTO nome_associado (empresa_id, nome)
-                         VALUES (?, ?)`,
+
+                        `INSERT INTO nome_associado 
+                        (empresa_id, nome)
+                        VALUES (?, ?)`,
+
                         [empresaId, nomeAssociado]
                     );
                 }
             }
         }
 
+
+        // ===============================================
+        // TERMOS ASSOCIADOS
+        // ===============================================
+
         if (Array.isArray(termos)) {
+
             for (const termoAssociado of termos) {
+
                 if (termoAssociado.trim() !== '') {
+
                     await connection.execute(
-                        `INSERT INTO termo_associado (empresa_id, nome)
-                         VALUES (?, ?)`,
+
+                        `INSERT INTO termo_associado 
+                        (empresa_id, nome)
+                        VALUES (?, ?)`,
+
                         [empresaId, termoAssociado]
                     );
                 }
             }
         }
 
+        // Confirma tudo no banco.
         await connection.commit();
 
+        // Retorna sucesso.
         res.status(201).json({
             sucesso: true,
             mensagem: 'Empresa cadastrada com sucesso.',
@@ -95,6 +193,8 @@ router.post('/', async (req, res) => {
         });
 
     } catch (erro) {
+
+        // Desfaz alterações em caso de erro.
         await connection.rollback();
 
         console.error('Erro ao cadastrar empresa:', erro);
@@ -105,8 +205,12 @@ router.post('/', async (req, res) => {
         });
 
     } finally {
+
+        // Libera conexão.
         connection.release();
     }
 });
 
+
+// Exporta as rotas.
 module.exports = router;
