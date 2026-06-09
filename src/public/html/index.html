@@ -13,6 +13,11 @@
         <article>
             <section>
                 <h1>Empresa</h1>
+
+                <p>
+                    <a href="lista.html">Ver empresas cadastradas</a>
+                </p>
+
                 <form id="formEmpresa" method="post">
                     <input type="text" name="empresaNome" placeholder="Nome da empresa">
                     <input type="text" name="empresaBolsa" placeholder="Ação na bolsa">
@@ -38,6 +43,9 @@
             </section>
         </article>
     </main>
+
+    <script src="../js/modal.js"></script>
+
 </body>
 <script>
     function adicionarNome() {
@@ -123,18 +131,18 @@
             const resultado = await resposta.json();
 
             if (resultado.sucesso) {
-                alert('Empresa cadastrada com sucesso!');
+                mostrarModal('Empresa cadastrada com sucesso!');
 
                 form.reset();
                 document.getElementById('listaNomes').innerHTML = '';
                 document.getElementById('listaTermos').innerHTML = '';
             } else {
-                alert(resultado.mensagem || 'Erro ao cadastrar empresa.');
+                mostrarModal(resultado.mensagem || 'Erro ao cadastrar empresa.');
             }
 
         } catch (erro) {
             console.error('Erro:', erro);
-            alert('Erro ao conectar com o servidor.');
+            mostrarModal('Erro ao conectar com o servidor.');
         }
     });
 </script>

@@ -31,16 +31,28 @@
             <br>
 
             <a href="lista.html">Voltar para listagem</a>
+
+            <button type="button" id="btnExcluirEmpresa">
+                Excluir empresa
+            </button>
         </section>
     </main>
 
+    <script src="../js/modal.js"></script>
+
     <script>
+
+        // Recupera o ID da empresa informado na URL.
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+
+        // ===============================================
+        // CARREGAR EMPRESA
+        // ===============================================
         async function carregarDetalhesEmpresa() {
-            const params = new URLSearchParams(window.location.search);
-            const id = params.get('id');
 
             if (!id) {
-                alert('ID da empresa não informado.');
+                mostrarModal('ID da empresa não informado.');
                 return;
             }
 
@@ -49,7 +61,7 @@
                 const dados = await resposta.json();
 
                 if (!dados.sucesso) {
-                    alert(dados.mensagem || 'Erro ao carregar empresa.');
+                    mostrarModal(dados.mensagem || 'Erro ao carregar empresa.');
                     return;
                 }
 
@@ -69,7 +81,7 @@
 
             } catch (erro) {
                 console.error('Erro:', erro);
-                alert('Erro ao conectar com o servidor.');
+                mostrarModal('Erro ao conectar com o servidor.');
             }
         }
 
@@ -89,6 +101,37 @@
             });
         }
 
+        // ===============================================
+        // EXCLUIR EMPRESA
+        // ===============================================
+        document.getElementById('btnExcluirEmpresa').addEventListener('click', async function () {
+            const confirmar = confirmarModal('Tem certeza que deseja excluir esta empresa? Essa ação não poderá ser desfeita.');
+
+            if (!confirmar) {
+                return;
+            }
+
+            try {
+                const resposta = await fetch(`http://localhost:3000/empresas/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const resultado = await resposta.json();
+
+                if (resultado.sucesso) {
+                    mostrarModal('Empresa excluída com sucesso!');
+                    window.location.href = 'lista.html';
+                } else {
+                    mostrarModal(resultado.mensagem || 'Erro ao excluir empresa.');
+                }
+
+            } catch (erro) {
+                console.error('Erro:', erro);
+                mostrarModal('Erro ao conectar com o servidor.');
+            }
+        });
+
+        // Inicializa a tela.
         carregarDetalhesEmpresa();
     </script>
 
