@@ -5,7 +5,7 @@
 -- USE ronda_diaria;
 
 CREATE TABLE empresa (
-    id_empresa INT AUTO_INCREMENT PRIMARY KEY,
+    id_empresa SERIAL PRIMARY KEY,
     nome VARCHAR(150) NOT NULL,
     bolsa VARCHAR(100),
     pais VARCHAR(100),
@@ -14,27 +14,39 @@ CREATE TABLE empresa (
 );
 
 CREATE TABLE nome_associado (
-    id_nome_associado INT AUTO_INCREMENT PRIMARY KEY,
-    empresa_id INT NOT NULL,
+    id_nome_associado SERIAL PRIMARY KEY,
+    empresa_id INTEGER NOT NULL,
     nome VARCHAR(150) NOT NULL,
-    FOREIGN KEY (empresa_id) REFERENCES empresa(id_empresa)
+
+    CONSTRAINT fk_nome_associado_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresa(id_empresa)
         ON DELETE CASCADE
 );
 
 CREATE TABLE termo_associado (
-    id_termo_associado INT AUTO_INCREMENT PRIMARY KEY,
+    id_termo_associado SERIAL PRIMARY KEY,
     empresa_id INT NOT NULL,
     nome VARCHAR(150) NOT NULL,
-    FOREIGN KEY (empresa_id) REFERENCES empresa(id_empresa)
+
+    CONSTRAINT fk_termo_associado_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresa(id_empresa)
         ON DELETE CASCADE
 );
 
 CREATE TABLE empresa_concorrente (
-    id_empresa_concorrente INT AUTO_INCREMENT PRIMARY KEY,
-    empresa_principal_id INT NOT NULL,
-    empresa_rival_id INT NOT NULL,
-    FOREIGN KEY (empresa_principal_id) REFERENCES empresa(id_empresa)
+    id_empresa_concorrente SERIAL PRIMARY KEY,
+    empresa_principal_id INTEGER NOT NULL,
+    empresa_rival_id INTEGER NOT NULL,
+    
+     CONSTRAINT fk_empresa_principal
+        FOREIGN KEY (empresa_principal_id)
+        REFERENCES empresa(id_empresa)
         ON DELETE CASCADE,
-    FOREIGN KEY (empresa_rival_id) REFERENCES empresa(id_empresa)
+
+    CONSTRAINT fk_empresa_rival
+        FOREIGN KEY (empresa_rival_id)
+        REFERENCES empresa(id_empresa)
         ON DELETE CASCADE
 );

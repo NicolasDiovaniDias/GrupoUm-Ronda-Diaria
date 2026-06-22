@@ -3,10 +3,9 @@ const router = express.Router();
 const pool = require('../config/db');
 
 router.get('/', async (req, res) => {
-    const connection = await pool.getConnection();
-
+    const client = await pool.connect();
     try {
-        const [empresas] = await connection.execute(`
+        const result = await client.query(`
             SELECT
                 e.id_empresa,
                 e.nome,
@@ -14,17 +13,17 @@ router.get('/', async (req, res) => {
                 e.pais,
                 e.ramo,
                 COALESCE((
-                    SELECT GROUP_CONCAT(na.nome SEPARATOR ', ')
+                    SELECT string_agg(na.nome, ', ')
                     FROM nome_associado na
                     WHERE na.empresa_id = e.id_empresa
                 ), '') AS nomes,
                 COALESCE((
-                    SELECT GROUP_CONCAT(ta.nome SEPARATOR ', ')
+                    SELECT string_agg(ta.nome, ', ')
                     FROM termo_associado ta
                     WHERE ta.empresa_id = e.id_empresa
                 ), '') AS termos,
                 COALESCE((
-                    SELECT GROUP_CONCAT(ec2.nome SEPARATOR ', ')
+                    SELECT string_agg(ec2.nome, ', ')
                     FROM empresa_concorrente ec
                     JOIN empresa ec2 ON ec.empresa_rival_id = ec2.id_empresa
                     WHERE ec.empresa_principal_id = e.id_empresa
@@ -34,12 +33,12 @@ router.get('/', async (req, res) => {
             LIMIT 50
         `);
 
-        res.json(empresas);
+        res.json(result.rows);
     } catch (erro) {
         console.error('Erro ao listar empresas:', erro);
         res.status(500).json({ sucesso: false, mensagem: 'Erro ao listar empresas.' });
     } finally {
-        connection.release();
+        client.release();
     }
 });
 
@@ -53,15 +52,15 @@ router.delete('/:id', async (req, res) => {
         });
     }
 
-    const connection = await pool.getConnection();
+    const client = await pool.connect();
 
     try {
-        const [resultado] = await connection.execute(
-            'DELETE FROM empresa WHERE id_empresa = ?',
+        const result = await client.query(
+            'DELETE FROM empresa WHERE id_empresa = $1',
             [idEmpresa]
         );
 
-        if (resultado.affectedRows === 0) {
+        if (result.rowCount === 0) {
             return res.status(404).json({
                 sucesso: false,
                 mensagem: 'Empresa não encontrada.'
@@ -79,15 +78,12 @@ router.delete('/:id', async (req, res) => {
             mensagem: 'Erro ao deletar empresa.'
         });
     } finally {
-        connection.release();
+        client.release();
     }
 });
 
 router.post('/', async (req, res) => {
     const { nome, bolsa, pais, ramo, concorrente, nomes, termos } = req.body;
-
-    console.log('Dados recebidos:', req.body);
-    console.log('Concorrente recebida:', concorrente);
 
     if (!nome || nome.trim() === '') {
         return res.status(400).json({
@@ -96,48 +92,44 @@ router.post('/', async (req, res) => {
         });
     }
 
-    const connection = await pool.getConnection();
+    const client = await pool.connect();
 
     try {
-        await connection.beginTransaction();
+        await client.query('BEGIN');
 
-        const [resultadoEmpresa] = await connection.execute(
+        const insertEmpresa = await client.query(
             `INSERT INTO empresa (nome, bolsa, pais, ramo)
-             VALUES (?, ?, ?, ?)`,
+             VALUES ($1, $2, $3, $4)
+             RETURNING id_empresa`,
             [nome, bolsa || null, pais || null, ramo || null]
         );
 
-        const empresaId = resultadoEmpresa.insertId;
+        const empresaId = insertEmpresa.rows[0].id_empresa;
 
         if (concorrente && concorrente.trim() !== '') {
             const nomeConcorrente = concorrente.trim();
 
-            const [concorrentesEncontradas] = await connection.execute(
-                `SELECT id_empresa 
-                FROM empresa 
-                WHERE nome = ?
-                LIMIT 1`,
+            const concorrenteSelect = await client.query(
+                `SELECT id_empresa FROM empresa WHERE nome = $1 LIMIT 1`,
                 [nomeConcorrente]
             );
 
             let concorrenteId;
 
-            if (concorrentesEncontradas.length > 0) {
-                concorrenteId = concorrentesEncontradas[0].id_empresa;
+            if (concorrenteSelect.rows.length > 0) {
+                concorrenteId = concorrenteSelect.rows[0].id_empresa;
             } else {
-                const [resultadoConcorrente] = await connection.execute(
-                    `INSERT INTO empresa (nome)
-                    VALUES (?)`,
+                const insertConc = await client.query(
+                    `INSERT INTO empresa (nome) VALUES ($1) RETURNING id_empresa`,
                     [nomeConcorrente]
                 );
-
-                concorrenteId = resultadoConcorrente.insertId;
+                concorrenteId = insertConc.rows[0].id_empresa;
             }
 
             if (concorrenteId !== empresaId) {
-                await connection.execute(
+                await client.query(
                     `INSERT INTO empresa_concorrente (empresa_principal_id, empresa_rival_id)
-                    VALUES (?, ?)`,
+                     VALUES ($1, $2)`,
                     [empresaId, concorrenteId]
                 );
             }
@@ -145,10 +137,10 @@ router.post('/', async (req, res) => {
 
         if (Array.isArray(nomes)) {
             for (const nomeAssociado of nomes) {
-                if (nomeAssociado.trim() !== '') {
-                    await connection.execute(
+                if (String(nomeAssociado).trim() !== '') {
+                    await client.query(
                         `INSERT INTO nome_associado (empresa_id, nome)
-                         VALUES (?, ?)`,
+                         VALUES ($1, $2)`,
                         [empresaId, nomeAssociado]
                     );
                 }
@@ -157,17 +149,17 @@ router.post('/', async (req, res) => {
 
         if (Array.isArray(termos)) {
             for (const termoAssociado of termos) {
-                if (termoAssociado.trim() !== '') {
-                    await connection.execute(
+                if (String(termoAssociado).trim() !== '') {
+                    await client.query(
                         `INSERT INTO termo_associado (empresa_id, nome)
-                         VALUES (?, ?)`,
+                         VALUES ($1, $2)`,
                         [empresaId, termoAssociado]
                     );
                 }
             }
         }
 
-        await connection.commit();
+        await client.query('COMMIT');
 
         res.status(201).json({
             sucesso: true,
@@ -176,17 +168,14 @@ router.post('/', async (req, res) => {
         });
 
     } catch (erro) {
-        await connection.rollback();
-
+        await client.query('ROLLBACK');
         console.error('Erro ao cadastrar empresa:', erro);
-
         res.status(500).json({
             sucesso: false,
             mensagem: 'Erro ao cadastrar empresa.'
         });
-
     } finally {
-        connection.release();
+        client.release();
     }
 });
 
