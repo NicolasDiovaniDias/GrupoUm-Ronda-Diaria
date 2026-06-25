@@ -3,6 +3,7 @@ const cors = require('cors');
 const path = require('path');
 
 const empresaRoutes = require('./routes/empresa');
+const noticiaRoutes = require('./routes/noticia');
 
 const app = express();
 const projectRoot = path.join(__dirname, '..');
@@ -22,6 +23,7 @@ app.get('/index.html', (req, res) => {
 });
 
 app.use('/empresas', empresaRoutes);
+app.use('/noticias', noticiaRoutes);
 
 app.listen(3000, () => {
     console.log('Servidor rodando em http://localhost:3000');

@@ -23,10 +23,19 @@ router.get('/', async (req, res) => {
                     WHERE ta.empresa_id = e.id_empresa
                 ), '') AS termos,
                 COALESCE((
-                    SELECT string_agg(ec2.nome, ', ')
-                    FROM empresa_concorrente ec
-                    JOIN empresa ec2 ON ec.empresa_rival_id = ec2.id_empresa
-                    WHERE ec.empresa_principal_id = e.id_empresa
+                    SELECT string_agg(nome, ', ')
+                    FROM (
+                        SELECT ec2.nome
+                        FROM empresa_concorrente ec
+                        JOIN empresa ec2 ON ec.empresa_rival_id = ec2.id_empresa
+                        WHERE ec.empresa_principal_id = e.id_empresa
+
+                        UNION ALL
+
+                        SELECT ca.nome
+                        FROM concorrente_associado ca
+                        WHERE ca.empresa_id = e.id_empresa
+                    ) concorrentes_union
                 ), '') AS concorrentes
             FROM empresa e
             ORDER BY e.id_empresa DESC
@@ -92,9 +101,10 @@ router.post('/', async (req, res) => {
         });
     }
 
-    const client = await pool.connect();
+    let client;
 
     try {
+        client = await pool.connect();
         await client.query('BEGIN');
 
         const insertEmpresa = await client.query(
@@ -114,23 +124,21 @@ router.post('/', async (req, res) => {
                 [nomeConcorrente]
             );
 
-            let concorrenteId;
-
             if (concorrenteSelect.rows.length > 0) {
-                concorrenteId = concorrenteSelect.rows[0].id_empresa;
-            } else {
-                const insertConc = await client.query(
-                    `INSERT INTO empresa (nome) VALUES ($1) RETURNING id_empresa`,
-                    [nomeConcorrente]
-                );
-                concorrenteId = insertConc.rows[0].id_empresa;
-            }
+                const concorrenteId = concorrenteSelect.rows[0].id_empresa;
 
-            if (concorrenteId !== empresaId) {
+                if (concorrenteId !== empresaId) {
+                    await client.query(
+                        `INSERT INTO empresa_concorrente (empresa_principal_id, empresa_rival_id)
+                         VALUES ($1, $2)`,
+                        [empresaId, concorrenteId]
+                    );
+                }
+            } else {
                 await client.query(
-                    `INSERT INTO empresa_concorrente (empresa_principal_id, empresa_rival_id)
+                    `INSERT INTO concorrente_associado (empresa_id, nome)
                      VALUES ($1, $2)`,
-                    [empresaId, concorrenteId]
+                    [empresaId, nomeConcorrente]
                 );
             }
         }
@@ -161,21 +169,30 @@ router.post('/', async (req, res) => {
 
         await client.query('COMMIT');
 
-        res.status(201).json({
+        return res.status(201).json({
             sucesso: true,
             mensagem: 'Empresa cadastrada com sucesso.',
             empresaId
         });
 
     } catch (erro) {
-        await client.query('ROLLBACK');
+        if (client) {
+            try {
+                await client.query('ROLLBACK');
+            } catch (rollbackErro) {
+                console.error('Erro ao fazer rollback:', rollbackErro);
+            }
+        }
+
         console.error('Erro ao cadastrar empresa:', erro);
-        res.status(500).json({
+        return res.status(500).json({
             sucesso: false,
             mensagem: 'Erro ao cadastrar empresa.'
         });
     } finally {
-        client.release();
+        if (client) {
+            client.release();
+        }
     }
 });
 

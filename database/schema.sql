@@ -50,3 +50,31 @@ CREATE TABLE empresa_concorrente (
         REFERENCES empresa(id_empresa)
         ON DELETE CASCADE
 );
+
+CREATE TABLE concorrente_associado (
+    id_concorrente_associado SERIAL PRIMARY KEY,
+    empresa_id INTEGER NOT NULL,
+    nome VARCHAR(150) NOT NULL,
+
+    CONSTRAINT fk_concorrente_associado_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresa(id_empresa)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE noticia_salva (
+    id_noticia_salva SERIAL PRIMARY KEY,
+    empresa_id INTEGER,
+    empresa_nome VARCHAR(150),
+    titulo TEXT NOT NULL,
+    link TEXT NOT NULL,
+    resumo TEXT,
+    data_noticia VARCHAR(100),
+    imagem TEXT,
+    data_salvamento TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_noticia_salva_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresa(id_empresa)
+        ON DELETE CASCADE
+);

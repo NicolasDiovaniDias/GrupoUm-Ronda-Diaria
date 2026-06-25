@@ -505,6 +505,31 @@ body {
 .src-cnn { color: #cc0000; }
 .src-band { color: #e8a000; }
 
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 28px; right: 28px;
+  background: #1a1a2e;
+  color: #fff;
+  border-radius: 10px;
+  padding: 14px 20px;
+  font-size: 13.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  z-index: 9999;
+  transform: translateY(20px);
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+  min-width: 240px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-left: 4px solid #22d3a5; }
+.toast.error { border-left: 4px solid #ec4899; }
+
 /* PAGINATION */
 .pagination {
   display: flex;
@@ -652,9 +677,9 @@ body {
       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 10h10M7 14h6"/></svg>
       Empresas no Banco
     </a>
-    <a class="nav-item" href="#">
-      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      Termos de Pesquisa
+    <a class="nav-item" href="noticias.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 4h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4z"/><path d="M8 8h6"/><path d="M8 12h4"/></svg>
+      Notícias Salvas
     </a>
     <a class="nav-item" href="#">
       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
@@ -720,6 +745,28 @@ body {
         </div>
       </div>
 
+      <div class="filter-group">
+        <label>Idioma</label>
+        <div class="field">
+          <select id="idiomaSelect">
+            <option value="pt-BR">Português (Brasil)</option>
+            <option value="pt-PT">Português (Portugal)</option>
+            <option value="all">Todos</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>Região</label>
+        <div class="field">
+          <select id="regiaoSelect">
+            <option value="BR">Brasil</option>
+            <option value="PT">Portugal</option>
+            <option value="all">Global</option>
+          </select>
+        </div>
+      </div>
+
       <div class="filter-actions">
         <button class="btn-buscar" id="btnBuscar" type="button">
           <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -759,13 +806,17 @@ body {
   </div>
 </main>
 
+<div class="toast" id="toast"></div>
+
 <script>
-  const SERPER_API_KEY = 'ef4f1343d9f68d7e7869f56746d76b5edb594a9a';
+  const SERPER_API_KEY = '2b83a1ba0890d6977c587ddc054c65c98671df1f';
   const SERPER_URL = 'https://google.serper.dev/search';
 
   const empresaSelect = document.getElementById('clienteSelect');
   const searchInput = document.getElementById('searchInput');
   const periodoSelect = document.getElementById('periodoSelect');
+  const idiomaSelect = document.getElementById('idiomaSelect');
+  const regiaoSelect = document.getElementById('regiaoSelect');
   const btnBuscar = document.getElementById('btnBuscar');
   const newsList = document.getElementById('newsList');
   const badgeCount = document.querySelector('.badge-count');
@@ -778,6 +829,20 @@ body {
 
   let empresas = [];
   let topicoAtivo = null;
+
+  function getApiBaseUrl() {
+    return window.location.port === '8000'
+      ? 'http://127.0.0.1:3000'
+      : window.location.origin;
+  }
+
+  function showToast(msg, tipo = 'success') {
+    const t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.className = `toast ${tipo} show`;
+    setTimeout(() => { t.className = `toast ${tipo}`; }, 3200);
+  }
 
   function splitLista(valor) {
     return String(valor || '')
@@ -812,14 +877,14 @@ body {
         queries: empresa.bolsa ? [empresa.bolsa] : []
       },
       {
-        key: 'concorrentes',
-        label: 'Concorrentes',
-        queries: concorrentes
-      },
-      {
         key: 'termos',
         label: 'Termos',
         queries: termos
+      },
+      {
+        key: 'concorrentes',
+        label: 'Concorrentes',
+        queries: concorrentes
       }
     ];
 
@@ -880,7 +945,7 @@ body {
     }
 
     newsList.innerHTML = itens.map((item, index) => `
-      <article class="news-card" onclick="window.open('${item.link}', '_blank', 'noopener,noreferrer')" aria-label="Abrir notícia ${index + 1}">
+      <article class="news-card" aria-label="Abrir notícia ${index + 1}">
         <img class="news-thumb" src="${item.imageUrl || item.thumbnail || 'https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&w=600&q=80'}" alt="Capa da notícia" />
         <div class="news-body">
           <h3>${item.title}</h3>
@@ -889,7 +954,10 @@ body {
         <div class="news-meta">
           <span class="source-name">${formatarFonte(item.link)}</span>
           <span class="news-date">${item.date || 'Recente'}</span>
-          <button class="btn-ler" type="button">Abrir notícia</button>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn-ler" type="button" onclick="window.open('${item.link}', '_blank', 'noopener,noreferrer')">Abrir notícia</button>
+            <button class="btn-ler" type="button" onclick="salvarNoticia(this, '${item.link.replace(/'/g, "\\'")}', '${(item.title || '').replace(/'/g, "\\'")}', '${(item.snippet || '').replace(/'/g, "\\'")}', '${(item.date || '').replace(/'/g, "\\'")}', '${(item.thumbnail || item.imageUrl || '').replace(/'/g, "\\'")}')">Salvar notícia</button>
+          </div>
         </div>
       </article>
     `).join('');
@@ -898,8 +966,51 @@ body {
     pageInfo.textContent = `Mostrando ${itens.length} resultado${itens.length === 1 ? '' : 's'} da busca.`;
   }
 
+  async function salvarNoticia(botao, link, title, snippet, date, thumbnail) {
+    const empresaSelecionada = empresas.find(item => String(item.id_empresa) === String(empresaSelect.value));
+    const empresaNome = empresaSelecionada ? empresaSelecionada.nome : (searchInput.value || '').trim();
+
+    try {
+      const resposta = await fetch(`${getApiBaseUrl()}/noticias`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          empresaId: empresaSelecionada ? empresaSelecionada.id_empresa : null,
+          empresaNome,
+          titulo: title,
+          link,
+          resumo: snippet,
+          data: date,
+          imagem: thumbnail
+        })
+      });
+
+      const resultado = await resposta.json();
+      if (!resposta.ok || !resultado.sucesso) {
+        throw new Error(resultado.mensagem || 'Erro ao salvar notícia.');
+      }
+
+      if (botao) {
+        botao.outerHTML = '<span class="saved-pill">Salvo</span>';
+      }
+      showToast('Notícia salva com sucesso!', 'success');
+    } catch (erro) {
+      console.error('Erro ao salvar notícia:', erro);
+      showToast(erro.message || 'Erro ao salvar notícia.', 'error');
+    }
+  }
+
   async function buscarSerper(query) {
     const periodo = periodoSelect.value || '1d';
+    const idioma = idiomaSelect.value || 'pt-BR';
+    const regiao = regiaoSelect.value || 'BR';
+    const idiomaParam = idioma === 'all' ? undefined : idioma;
+    const regiaoParam = regiao === 'all' ? undefined : regiao;
+    const termoLimpo = String(query || '').trim().replace(/\s+/g, ' ').slice(0, 180);
+    const queryComFiltro = `${termoLimpo} noticias`;
+
     const response = await fetch(SERPER_URL, {
       method: 'POST',
       headers: {
@@ -907,17 +1018,24 @@ body {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        q: `${query} -site:youtube.com -site:instagram.com -site:tiktok.com`,
+        q: queryComFiltro,
         type: 'news',
         num: 20,
-        gl: 'BR',
-        hl: 'pt-BR',
+        ...(regiaoParam ? { gl: regiaoParam.toLowerCase() } : {}),
+        ...(idiomaParam ? { hl: idiomaParam.toLowerCase() } : {}),
         tbs: periodo === '1d' ? 'qdr:d' : periodo === '1w' ? 'qdr:w' : periodo === '1m' ? 'qdr:m' : 'qdr:y'
       })
     });
 
     if (!response.ok) {
-      throw new Error(`Erro na API Serper: ${response.status}`);
+      const corpo = await response.text();
+      let detalhe = '';
+      try {
+        detalhe = JSON.parse(corpo).error || '';
+      } catch {
+        detalhe = corpo;
+      }
+      throw new Error(`Erro na API Serper: ${response.status}${detalhe ? ` - ${detalhe}` : ''}`);
     }
 
     const data = await response.json();
@@ -985,7 +1103,7 @@ body {
 
   async function carregarEmpresas() {
     try {
-      const resposta = await fetch('/empresas');
+      const resposta = await fetch(`${getApiBaseUrl()}/empresas`);
       const dados = await resposta.json();
 
       empresas = Array.isArray(dados) ? dados : [];

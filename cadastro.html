@@ -681,6 +681,12 @@ body {
 <div class="toast" id="toast"></div>
 
 <script>
+  function getApiBaseUrl() {
+    return window.location.port === '8000'
+      ? 'http://127.0.0.1:3000'
+      : window.location.origin;
+  }
+
   function showToast(msg, tipo = 'success') {
     const t = document.getElementById('toast');
     if (!t) return;
@@ -742,7 +748,7 @@ body {
     };
 
     try {
-      const resposta = await fetch('/empresas', {
+      const resposta = await fetch(`${getApiBaseUrl()}/empresas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dadosEmpresa)
@@ -774,7 +780,7 @@ body {
   /* ── CARREGAR LISTA ── */
   async function carregarEmpresas() {
     try {
-      const resposta = await fetch('/empresas');
+      const resposta = await fetch(`${getApiBaseUrl()}/empresas`);
       const empresas = await resposta.json();
       renderLista(Array.isArray(empresas) ? empresas : []);
     } catch (erro) {
