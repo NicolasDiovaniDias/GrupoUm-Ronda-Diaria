@@ -124,6 +124,14 @@
       margin-bottom: 12px;
     }
 
+    .card-resumo {
+      font-size: 0.88rem;
+      color: #aaa;
+      line-height: 1.5;
+      margin-bottom: 10px;
+      font-style: italic;
+    }
+
     .card-meta {
       display: flex;
       align-items: center;
@@ -187,7 +195,6 @@
       statusLabel.style.display = 'block';
       statusLabel.innerHTML = `Buscando as últimas notícias sobre <strong>"${termoBusca}"</strong>...`;
 
-      // Aplica o intitle: para buscar cirurgicamente pelo título e evita quebra de URL
       const termoFormatado = `intitle:"${termoBusca}"`;
       const API_URL = `https://script.google.com/macros/s/${SCRIPT_ID}/exec?q=${encodeURIComponent(termoFormatado)}`;
 
@@ -195,7 +202,6 @@
         const response = await fetch(API_URL, { redirect: 'follow' });
         const noticiasJson = await response.json();
 
-        // Trava de segurança caso o Apps Script devolva um erro
         if (noticiasJson.error) {
            throw new Error(noticiasJson.error);
         }
@@ -205,25 +211,38 @@
           return;
         }
 
-        const agrupadas = {};
-
-        noticiasJson.forEach(n => {
+        const todasNoticias = noticiasJson.map(n => {
           const dataObj = new Date(n.pubDate);
           const dia = String(dataObj.getDate()).padStart(2, '0');
           const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
           const ano = dataObj.getFullYear();
           const dataChave = `${dia}/${mes}/${ano}`;
           const horaF = dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-
-          if (!agrupadas[dataChave]) agrupadas[dataChave] = [];
-
-          agrupadas[dataChave].push({
-            titulo: n.title, link: n.link, fonte: n.source, hora: horaF
-          });
+          return { titulo: n.title, link: n.link, fonte: n.source, hora: horaF, dataChave };
         });
 
+        statusLabel.innerHTML = `Gerando resumos com IA para as primeiras 10 notícias...`;
+        renderizar(todasNoticias, {});
+
+        const payload = todasNoticias.slice(0, 10).map(n => ({
+          titulo: n.titulo, link: n.link, fonte: n.fonte
+        }));
+
+        const resumoResponse = await fetch('/resumo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ noticias: payload })
+        });
+
+        const resumoData = await resumoResponse.json();
+
+        const mapaResumos = {};
+        if (resumoData.sucesso) {
+          resumoData.resultados.forEach(r => { mapaResumos[r.link] = r.resumo; });
+        }
+
         statusLabel.style.display = 'none';
-        renderizar(agrupadas);
+        renderizar(todasNoticias, mapaResumos);
 
       } catch (error) {
         console.error(error);
@@ -231,15 +250,22 @@
       }
     }
 
-    function renderizar(noticias) {
+    function renderizar(noticias, mapaResumos) {
       const container = document.getElementById('news-container');
-      
+      container.innerHTML = '';
+
       const sitesPagos = [
-        'Valor Econômico', 'Bloomberg Linea Brasil', 'O Globo', 
+        'Valor Econômico', 'Bloomberg Linea Brasil', 'O Globo',
         'Folha de S.Paulo', 'O Estado de S. Paulo', 'Exame'
       ];
 
-      const datas = Object.keys(noticias).sort((a, b) => {
+      const agrupadas = {};
+      noticias.forEach(n => {
+        if (!agrupadas[n.dataChave]) agrupadas[n.dataChave] = [];
+        agrupadas[n.dataChave].push(n);
+      });
+
+      const datas = Object.keys(agrupadas).sort((a, b) => {
         return new Date(b.split('/').reverse().join('-')) - new Date(a.split('/').reverse().join('-'));
       });
 
@@ -249,12 +275,17 @@
 
         let html = `<div class="data-titulo">${data}</div><div class="news-list">`;
 
-        noticias[data].forEach(n => {
-          let badgeAssinatura = sitesPagos.includes(n.fonte) ? `<span class="badge-paywall">🔒 Assinatura</span>` : '';
+        agrupadas[data].forEach(n => {
+          const badgeAssinatura = sitesPagos.includes(n.fonte) ? `<span class="badge-paywall">🔒 Assinatura</span>` : '';
+          const resumo = mapaResumos[n.link];
+          const resumoHtml = resumo
+            ? `<div class="card-resumo">${resumo}</div>`
+            : (Object.keys(mapaResumos).length === 0 ? `<div class="card-resumo" style="color:#555;">Gerando resumo...</div>` : '');
 
           html += `
             <a href="${n.link}" target="_blank" class="card">
               <div class="card-title">${n.titulo}</div>
+              ${resumoHtml}
               <div class="card-meta">
                 <span class="badge-source">🏢 ${n.fonte}</span>
                 ${badgeAssinatura}
