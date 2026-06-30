@@ -24,6 +24,10 @@ CREATE TABLE nome_associado (
         ON DELETE CASCADE
 );
 
+ALTER TABLE nome_associado
+    ADD CONSTRAINT uq_nome_associado_empresa_nome
+    UNIQUE (empresa_id, nome);
+
 CREATE TABLE termo_associado (
     id_termo_associado SERIAL PRIMARY KEY,
     empresa_id INT NOT NULL,
@@ -34,6 +38,10 @@ CREATE TABLE termo_associado (
         REFERENCES empresa(id_empresa)
         ON DELETE CASCADE
 );
+
+ALTER TABLE termo_associado
+    ADD CONSTRAINT uq_termo_associado_empresa_nome
+    UNIQUE (empresa_id, nome);
 
 CREATE TABLE empresa_concorrente (
     id_empresa_concorrente SERIAL PRIMARY KEY,
@@ -51,6 +59,10 @@ CREATE TABLE empresa_concorrente (
         ON DELETE CASCADE
 );
 
+ALTER TABLE empresa_concorrente
+    ADD CONSTRAINT uq_empresa_concorrente_par
+    UNIQUE (empresa_principal_id, empresa_rival_id);
+
 CREATE TABLE concorrente_associado (
     id_concorrente_associado SERIAL PRIMARY KEY,
     empresa_id INTEGER NOT NULL,
@@ -61,6 +73,10 @@ CREATE TABLE concorrente_associado (
         REFERENCES empresa(id_empresa)
         ON DELETE CASCADE
 );
+
+ALTER TABLE concorrente_associado
+    ADD CONSTRAINT uq_concorrente_associado_empresa_nome
+    UNIQUE (empresa_id, nome);
 
 CREATE TABLE noticia_salva (
     id_noticia_salva SERIAL PRIMARY KEY,

@@ -681,18 +681,6 @@ body {
       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 4h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4z"/><path d="M8 8h6"/><path d="M8 12h4"/></svg>
       Notícias Salvas
     </a>
-    <a class="nav-item" href="#">
-      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-      Fontes de Pesquisa
-    </a>
-    <a class="nav-item" href="#">
-      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-      Relatórios
-    </a>
-    <a class="nav-item" href="#">
-      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-      Configurações
-    </a>
   </nav>
 </aside>
 
@@ -936,6 +924,22 @@ body {
     }
   }
 
+  function normalizarLinkNoticia(link) {
+    const texto = String(link || '').trim();
+
+    if (!texto) {
+      return '';
+    }
+
+    try {
+      const url = new URL(texto);
+      url.pathname = url.pathname.replace(/\/undefined(?=\/|$)/g, '');
+      return url.toString();
+    } catch {
+      return texto.replace(/\/undefined(?=\/|$)/g, '');
+    }
+  }
+
   function renderizarResultados(itens) {
     if (!itens.length) {
       newsList.innerHTML = '<div class="news-empty">Nenhuma notícia encontrada para os termos selecionados.</div>';
@@ -944,7 +948,10 @@ body {
       return;
     }
 
-    newsList.innerHTML = itens.map((item, index) => `
+    newsList.innerHTML = itens.map((item, index) => {
+      const linkNoticia = normalizarLinkNoticia(item.link);
+
+      return `
       <article class="news-card" aria-label="Abrir notícia ${index + 1}">
         <img class="news-thumb" src="${item.imageUrl || item.thumbnail || 'https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&w=600&q=80'}" alt="Capa da notícia" />
         <div class="news-body">
@@ -952,15 +959,16 @@ body {
           <p>${item.snippet || 'Nenhuma descrição disponível.'}</p>
         </div>
         <div class="news-meta">
-          <span class="source-name">${formatarFonte(item.link)}</span>
+          <span class="source-name">${formatarFonte(linkNoticia)}</span>
           <span class="news-date">${item.date || 'Recente'}</span>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button class="btn-ler" type="button" onclick="window.open('${item.link}', '_blank', 'noopener,noreferrer')">Abrir notícia</button>
-            <button class="btn-ler" type="button" onclick="salvarNoticia(this, '${item.link.replace(/'/g, "\\'")}', '${(item.title || '').replace(/'/g, "\\'")}', '${(item.snippet || '').replace(/'/g, "\\'")}', '${(item.date || '').replace(/'/g, "\\'")}', '${(item.thumbnail || item.imageUrl || '').replace(/'/g, "\\'")}')">Salvar notícia</button>
+            <button class="btn-ler" type="button" onclick="window.open('${linkNoticia.replace(/'/g, "\\'")}', '_blank', 'noopener,noreferrer')">Abrir notícia</button>
+            <button class="btn-ler" type="button" onclick="salvarNoticia(this, '${linkNoticia.replace(/'/g, "\\'")}', '${(item.title || '').replace(/'/g, "\\'")}', '${(item.snippet || '').replace(/'/g, "\\'")}', '${(item.date || '').replace(/'/g, "\\'")}', '${(item.thumbnail || item.imageUrl || '').replace(/'/g, "\\'")}')">Salvar notícia</button>
           </div>
         </div>
       </article>
-    `).join('');
+      `;
+    }).join('');
 
     badgeCount.textContent = `${itens.length} notícias encontradas`;
     pageInfo.textContent = `Mostrando ${itens.length} resultado${itens.length === 1 ? '' : 's'} da busca.`;

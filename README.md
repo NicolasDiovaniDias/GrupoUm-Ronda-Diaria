@@ -9,7 +9,7 @@ Criamos um sistema que permite:
 - Adicionar termos associados
 - Relacionar uma empresa concorrente
 
-Tudo isso integrado com um banco de dados MySQL.
+Tudo isso integrado com um banco de dados PostgreSQL.
 
 ---
 
@@ -27,8 +27,8 @@ Tudo isso integrado com um banco de dados MySQL.
 
 - Node.js → roda JavaScript no servidor
 - Express → cria a API
-- MySQL → banco de dados
-- mysql2 → conecta Node com MySQL
+- PostgreSQL → banco de dados
+- pg → conecta Node com PostgreSQL
 
 ---
 
@@ -60,7 +60,7 @@ npm install
 Rodar o servidor:
 
 ```
-node backend/server.js
+npm start
 ```
 
 Abrir no navegador:
@@ -122,4 +122,13 @@ http://localhost:3000/html/index.html
 http://localhost:3000/html/pesquisa.html
 http://localhost:3000/html/teste.html
 
->>> host agora é 'mysql' nao 'localhost'
+>>> host agora é 'postgres' no Docker e pode ser configurado via DATABASE_URL fora do container
+
+Observação: o ambiente Docker usa PostgreSQL 17 para evitar problemas de inicialização com o volume local.
+
+## ✅ Sugestões de evolução
+
+- adicionar testes automáticos para as rotas principais
+- criar validação de campos no frontend e no backend
+- remover páginas antigas ou unificar a experiência em uma única interface
+- adicionar índice/constraint de unicidade para evitar duplicidades no cadastro
