@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -5,6 +6,9 @@ const path = require('path');
 const empresaRoutes = require('./routes/empresa');
 const noticiaRoutes = require('./routes/noticia');
 const resumoRoutes = require('./routes/resumo');
+
+// Inicializar Worker do BullMQ para escutar a fila em background
+require('./queues/noticiaWorker');
 
 const app = express();
 const projectRoot = path.join(__dirname, '..');

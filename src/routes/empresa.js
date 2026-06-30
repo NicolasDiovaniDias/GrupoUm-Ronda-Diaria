@@ -196,4 +196,132 @@ router.post('/', async (req, res) => {
     }
 });
 
+router.put('/:id', async (req, res) => {
+    const idEmpresa = Number(req.params.id);
+    const { nome, bolsa, pais, ramo, concorrente, nomes, termos } = req.body;
+
+    if (!Number.isInteger(idEmpresa) || idEmpresa <= 0) {
+        return res.status(400).json({
+            sucesso: false,
+            mensagem: 'ID da empresa inválido.'
+        });
+    }
+
+    if (!nome || nome.trim() === '') {
+        return res.status(400).json({
+            sucesso: false,
+            mensagem: 'O nome da empresa é obrigatório.'
+        });
+    }
+
+    let client;
+
+    try {
+        client = await pool.connect();
+        await client.query('BEGIN');
+
+        // 1. Atualizar dados básicos da empresa
+        const updateResult = await client.query(
+            `UPDATE empresa 
+             SET nome = $1, bolsa = $2, pais = $3, ramo = $4
+             WHERE id_empresa = $5`,
+            [nome.trim(), bolsa || null, pais || null, ramo || null, idEmpresa]
+        );
+
+        if (updateResult.rowCount === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({
+                sucesso: false,
+                mensagem: 'Empresa não encontrada.'
+            });
+        }
+
+        // 2. Limpar associações antigas
+        await client.query('DELETE FROM nome_associado WHERE empresa_id = $1', [idEmpresa]);
+        await client.query('DELETE FROM termo_associado WHERE empresa_id = $1', [idEmpresa]);
+        await client.query('DELETE FROM concorrente_associado WHERE empresa_id = $1', [idEmpresa]);
+        await client.query('DELETE FROM empresa_concorrente WHERE empresa_principal_id = $1', [idEmpresa]);
+
+        // 3. Inserir concorrente associado ou cadastrado
+        if (concorrente && concorrente.trim() !== '') {
+            const nomeConcorrente = concorrente.trim();
+
+            const concorrenteSelect = await client.query(
+                `SELECT id_empresa FROM empresa WHERE nome = $1 LIMIT 1`,
+                [nomeConcorrente]
+            );
+
+            if (concorrenteSelect.rows.length > 0) {
+                const concorrenteId = concorrenteSelect.rows[0].id_empresa;
+
+                if (concorrenteId !== idEmpresa) {
+                    await client.query(
+                        `INSERT INTO empresa_concorrente (empresa_principal_id, empresa_rival_id)
+                         VALUES ($1, $2)`,
+                        [idEmpresa, concorrenteId]
+                    );
+                }
+            } else {
+                await client.query(
+                    `INSERT INTO concorrente_associado (empresa_id, nome)
+                     VALUES ($1, $2)`,
+                    [idEmpresa, nomeConcorrente]
+                );
+            }
+        }
+
+        // 4. Inserir novas variações de nomes
+        if (Array.isArray(nomes)) {
+            for (const nomeAssociado of nomes) {
+                if (String(nomeAssociado).trim() !== '') {
+                    await client.query(
+                        `INSERT INTO nome_associado (empresa_id, nome)
+                         VALUES ($1, $2)`,
+                        [idEmpresa, nomeAssociado.trim()]
+                    );
+                }
+            }
+        }
+
+        // 5. Inserir novos termos de busca
+        if (Array.isArray(termos)) {
+            for (const termoAssociado of termos) {
+                if (String(termoAssociado).trim() !== '') {
+                    await client.query(
+                        `INSERT INTO termo_associado (empresa_id, nome)
+                         VALUES ($1, $2)`,
+                        [idEmpresa, termoAssociado.trim()]
+                    );
+                }
+            }
+        }
+
+        await client.query('COMMIT');
+
+        return res.json({
+            sucesso: true,
+            mensagem: 'Empresa atualizada com sucesso.'
+        });
+
+    } catch (erro) {
+        if (client) {
+            try {
+                await client.query('ROLLBACK');
+            } catch (rollbackErro) {
+                console.error('Erro ao fazer rollback:', rollbackErro);
+            }
+        }
+
+        console.error('Erro ao atualizar empresa:', erro);
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro ao atualizar empresa.'
+        });
+    } finally {
+        if (client) {
+            client.release();
+        }
+    }
+});
+
 module.exports = router;

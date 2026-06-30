@@ -47,11 +47,74 @@ body { font-family: 'Lato', sans-serif; background: var(--body-bg); color: var(-
 .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:16px; }
 .card { background: var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:0 2px 10px rgba(0,0,0,0.04); display:flex; flex-direction:column; gap:12px; }
 .card-title { font-family:'Sora', sans-serif; font-size:15px; font-weight:700; color:var(--text-main); line-height:1.35; }
-.card-meta { font-size:12.5px; color:var(--text-muted); }
+.card-meta { font-size:12.5px; color:var(--text-muted); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .card-desc { font-size:13px; color:var(--text-main); line-height:1.5; }
 .card-actions { display:flex; justify-content:flex-end; }
 .btn-open { display:inline-flex; align-items:center; gap:6px; background: var(--accent-grad); color:#fff; border:none; border-radius:7px; padding:8px 12px; font-size:12.5px; font-weight:700; text-decoration:none; }
 .empty-state { text-align:center; padding:48px 24px; color:var(--text-muted); font-size:14px; border:1.5px dashed var(--border); border-radius:var(--radius); background:#fff; }
+
+.sentiment-badge { font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; }
+.badge-positivo { background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+.badge-neutro { background: rgba(156, 163, 175, 0.12); color: #7b80a0; border: 1px solid rgba(156, 163, 175, 0.2); }
+.badge-negativo { background: rgba(244, 63, 94, 0.12); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.2); }
+
+.search-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  align-items: center;
+  background: #fff;
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  flex-wrap: wrap;
+}
+.search-input-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 260px;
+}
+.search-input-wrapper svg {
+  position: absolute;
+  left: 14px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.search-input {
+  width: 100%;
+  padding: 10px 16px 10px 42px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 13.5px;
+  color: var(--text-main);
+  background: var(--body-bg);
+  outline: none;
+  transition: all 0.2s ease;
+}
+.search-input:focus {
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+.filter-select {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 13.5px;
+  color: var(--text-main);
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 180px;
+}
+.filter-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
 </style>
 </head>
 <body>
@@ -63,12 +126,28 @@ body { font-family: 'Lato', sans-serif; background: var(--body-bg); color: var(-
       <span>Monitoramento de Notícias</span>
     </div>
   </div>
+
   <nav class="nav">
-    <a class="nav-item" href="index.html">Dashboard</a>
-    <a class="nav-item" href="index.html">Buscar Notícias</a>
-    <a class="nav-item" href="cadastro.html">Empresas/Clientes</a>
-    <a class="nav-item" href="empresas.html">Empresas no Banco</a>
-    <a class="nav-item active" href="noticias.html">Notícias Salvas</a>
+    <a class="nav-item" href="dashboard.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" href="index.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Buscar Notícias
+    </a>
+    <a class="nav-item" href="cadastro.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      Empresas/Clientes
+    </a>
+    <a class="nav-item" href="empresas.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 10h10M7 14h6"/></svg>
+      Empresas no Banco
+    </a>
+    <a class="nav-item active" href="noticias.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 4h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4z"/><path d="M8 8h6"/><path d="M8 12h4"/></svg>
+      Notícias Salvas
+    </a>
   </nav>
 </aside>
 <main class="main">
@@ -80,6 +159,26 @@ body { font-family: 'Lato', sans-serif; background: var(--body-bg); color: var(-
   </header>
   <div class="content">
     <div class="status-bar loading" id="statusBar"><span class="dot"></span><span id="statusText">Carregando notícias salvas...</span></div>
+    
+    <div class="search-container">
+      <div class="search-input-wrapper">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" class="search-input" id="searchInput" placeholder="Buscar por título, resumo ou empresa..."/>
+      </div>
+      <select class="filter-select" id="sentimentFilter">
+        <option value="todos">Todos os Sentimentos</option>
+        <option value="positivo">Positivo</option>
+        <option value="neutro">Neutro</option>
+        <option value="negativo">Negativo</option>
+      </select>
+      <select class="filter-select" id="companyFilter">
+        <option value="todos">Todas as Empresas</option>
+      </select>
+    </div>
+
     <div class="list-header">
       <div class="list-title">
         <h2>Todas as notícias</h2>
@@ -94,6 +193,12 @@ body { font-family: 'Lato', sans-serif; background: var(--body-bg); color: var(-
   const statusText = document.getElementById('statusText');
   const badgeCount = document.getElementById('badgeCount');
   const listaEl = document.getElementById('lista');
+  
+  const searchInput = document.getElementById('searchInput');
+  const sentimentFilter = document.getElementById('sentimentFilter');
+  const companyFilter = document.getElementById('companyFilter');
+
+  let allNoticias = [];
 
   function setStatus(msg, type='ok') {
     statusText.textContent = msg;
@@ -102,13 +207,16 @@ body { font-family: 'Lato', sans-serif; background: var(--body-bg); color: var(-
 
   function renderCards(itens) {
     if (!itens.length) {
-      listaEl.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1">Nenhuma notícia salva ainda.</div>';
+      listaEl.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1">Nenhuma notícia encontrada com os filtros atuais.</div>';
       return;
     }
 
     listaEl.innerHTML = itens.map(item => `
       <article class="card">
-        <div class="card-meta">${item.empresa_nome || 'Empresa não informada'} • ${item.data_noticia || 'Data não informada'}</div>
+        <div class="card-meta">
+          <span>${item.empresa_nome || 'Empresa não informada'} • ${item.data_noticia || 'Data não informada'}</span>
+          <span class="sentiment-badge badge-${item.sentimento || 'neutro'}">${item.sentimento || 'neutro'}</span>
+        </div>
         <div class="card-title">${item.titulo || 'Sem título'}</div>
         <div class="card-desc">${item.resumo || 'Sem resumo disponível.'}</div>
         <div class="card-actions">
@@ -118,20 +226,63 @@ body { font-family: 'Lato', sans-serif; background: var(--body-bg); color: var(-
     `).join('');
   }
 
+  function popularFiltroEmpresas(itens) {
+    const nomesEmpresas = [...new Set(itens.map(i => i.empresa_nome).filter(Boolean))].sort();
+    companyFilter.innerHTML = '<option value="todos">Todas as Empresas</option>' +
+      nomesEmpresas.map(nome => `<option value="${nome}">${nome}</option>`).join('');
+  }
+
+  function filtrarNoticias() {
+    const termo = searchInput.value.toLowerCase().trim();
+    const sentimentoSelected = sentimentFilter.value;
+    const empresaSelected = companyFilter.value;
+
+    const itensFiltrados = allNoticias.filter(item => {
+      // 1. Filtro de texto por busca
+      const matchesTexto = !termo ||
+        (item.titulo && item.titulo.toLowerCase().includes(termo)) ||
+        (item.resumo && item.resumo.toLowerCase().includes(termo)) ||
+        (item.empresa_nome && item.empresa_nome.toLowerCase().includes(termo));
+
+      // 2. Filtro por sentimento
+      const matchesSentimento = sentimentoSelected === 'todos' || item.sentimento === sentimentoSelected;
+
+      // 3. Filtro por empresa
+      const matchesEmpresa = empresaSelected === 'todos' || item.empresa_nome === empresaSelected;
+
+      return matchesTexto && matchesSentimento && matchesEmpresa;
+    });
+
+    renderCards(itensFiltrados);
+    
+    if (itensFiltrados.length === allNoticias.length) {
+      badgeCount.textContent = `${allNoticias.length} notícia${allNoticias.length !== 1 ? 's' : ''}`;
+    } else {
+      badgeCount.textContent = `${itensFiltrados.length} de ${allNoticias.length} filtrada${itensFiltrados.length !== 1 ? 's' : ''}`;
+    }
+  }
+
   async function carregarNoticias() {
     setStatus('Carregando notícias salvas...', 'loading');
     try {
       const res = await fetch('/noticias');
       const dados = await res.json();
-      const itens = Array.isArray(dados) ? dados : [];
-      renderCards(itens);
-      badgeCount.textContent = `${itens.length} notícia${itens.length !== 1 ? 's' : ''}`;
-      setStatus(`${itens.length} notícia${itens.length !== 1 ? 's' : ''} carregada${itens.length !== 1 ? 's' : ''} com sucesso.`, 'ok');
+      allNoticias = Array.isArray(dados) ? dados : [];
+      
+      popularFiltroEmpresas(allNoticias);
+      renderCards(allNoticias);
+      
+      badgeCount.textContent = `${allNoticias.length} notícia${allNoticias.length !== 1 ? 's' : ''}`;
+      setStatus(`${allNoticias.length} notícia${allNoticias.length !== 1 ? 's' : ''} carregada${allNoticias.length !== 1 ? 's' : ''} com sucesso.`, 'ok');
     } catch (err) {
       setStatus('Não foi possível carregar as notícias.', 'error');
       listaEl.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1">Erro ao buscar as notícias salvas.</div>';
     }
   }
+
+  searchInput.addEventListener('input', filtrarNoticias);
+  sentimentFilter.addEventListener('change', filtrarNoticias);
+  companyFilter.addEventListener('change', filtrarNoticias);
 
   carregarNoticias();
 </script>

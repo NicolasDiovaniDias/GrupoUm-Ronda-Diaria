@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ronda Diária — Dashboard de Sentimentos</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --sidebar-bg: #0f0c29;
+  --sidebar-w: 240px;
+  --accent: #8b5cf6;
+  --accent2: #ec4899;
+  --accent-grad: linear-gradient(135deg, #8b5cf6, #ec4899);
+  --body-bg: #f6f7fb;
+  --card-bg: #ffffff;
+  --text-main: #1a1a2e;
+  --text-muted: #7b80a0;
+  --border: #e8eaf2;
+  --radius: 12px;
+  
+  --positive-color: #10b981;
+  --neutral-color: #9ca3af;
+  --negative-color: #f43f5e;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Lato', sans-serif;
+  background: var(--body-bg);
+  color: var(--text-main);
+  display: flex;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.sidebar::before {
+  content: '';
+  position: absolute;
+  bottom: 120px; left: -60px;
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(139,92,246,0.35) 0%, transparent 70%);
+  pointer-events: none;
+}
+.sidebar::after {
+  content: '';
+  position: absolute;
+  bottom: 60px; right: -40px;
+  width: 160px; height: 160px;
+  background: radial-gradient(circle, rgba(236,72,153,0.22) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.logo-area {
+  padding: 28px 22px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.logo-mark {
+  width: 42px; height: 42px;
+  background: var(--accent-grad);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Sora', sans-serif;
+  font-size: 20px; font-weight: 700;
+  color: #fff;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 16px rgba(139,92,246,0.45);
+}
+
+.logo-text { font-family: 'Sora', sans-serif; }
+.logo-text strong { display: block; color: #fff; font-size: 15px; font-weight: 700; line-height: 1.2; }
+.logo-text span { color: rgba(255,255,255,0.45); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.nav {
+  flex: 1;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  color: rgba(255,255,255,0.5);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+  text-decoration: none;
+  position: relative;
+}
+
+.nav-item:hover {
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.85);
+}
+
+.nav-item.active {
+  background: var(--accent-grad);
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(139,92,246,0.38);
+}
+
+.nav-item svg { flex-shrink: 0; }
+
+/* ── MAIN ── */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* TOPBAR */
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0;
+  z-index: 50;
+}
+
+.topbar-left h1 {
+  font-family: 'Sora', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.topbar-left p {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+/* ── CONTENT ── */
+.content {
+  padding: 28px 32px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* STATUS BAR */
+.status-bar {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+
+.status-bar .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #22d3a5;
+  box-shadow: 0 0 6px rgba(34,211,165,0.7);
+  flex-shrink: 0;
+}
+
+.status-bar.loading .dot { background: var(--accent); box-shadow: 0 0 6px rgba(139,92,246,0.7); }
+.status-bar.error .dot { background: #f87171; box-shadow: 0 0 6px rgba(248,113,113,0.7); }
+
+/* CONTROLS ROW */
+.controls-bar {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.control-group label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.select-field {
+  background: #f8f9fc;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  height: 38px;
+  padding: 0 12px;
+  font-family: 'Lato', sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-main);
+  outline: none;
+  cursor: pointer;
+  min-width: 200px;
+}
+.select-field:focus { border-color: var(--accent); }
+
+/* CRISIS ALERT WIDGET */
+.crisis-alert {
+  background: #fff0f2;
+  border: 1.5px solid rgba(244, 63, 94, 0.3);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  display: none;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.08);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.crisis-icon {
+  width: 42px; height: 42px;
+  background: var(--negative-color);
+  color: #fff;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: bold;
+  flex-shrink: 0;
+  box-shadow: 0 3px 8px rgba(244, 63, 94, 0.4);
+}
+
+.crisis-content h4 {
+  font-family: 'Sora', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #9f1239;
+  margin-bottom: 2px;
+}
+
+.crisis-content p {
+  font-size: 13px;
+  color: #be123c;
+}
+
+/* KPIS CARD ROW */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.kpi-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+
+.kpi-card .kpi-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.kpi-card .kpi-val {
+  font-family: 'Sora', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1;
+}
+
+.kpi-card.kpi-positive { border-left: 4px solid var(--positive-color); }
+.kpi-card.kpi-neutral { border-left: 4px solid var(--neutral-color); }
+.kpi-card.kpi-negative { border-left: 4px solid var(--negative-color); }
+
+/* CHARTS GRID */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 20px;
+}
+
+@media(max-width: 900px) {
+  .charts-grid { grid-template-columns: 1fr; }
+}
+
+.chart-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chart-card h3 {
+  font-family: 'Sora', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  margin: auto;
+  min-height: 250px;
+  max-height: 320px;
+}
+
+/* RECENT HIGHLIGHTS */
+.highlights-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.highlights-card h3 {
+  font-family: 'Sora', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.highlights-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 350px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.highlight-item {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.highlight-item:hover {
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.highlight-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.highlight-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.35;
+}
+
+.highlight-company {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.sentiment-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.badge-positivo { background: rgba(16, 185, 129, 0.12); color: var(--positive-color); border: 1px solid rgba(16, 185, 129, 0.2); }
+.badge-neutro { background: rgba(156, 163, 175, 0.12); color: var(--text-muted); border: 1px solid rgba(156, 163, 175, 0.2); }
+.badge-negativo { background: rgba(244, 63, 94, 0.12); color: var(--negative-color); border: 1px solid rgba(244, 63, 94, 0.2); }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo-area">
+    <div class="logo-mark">R</div>
+    <div class="logo-text">
+      <strong>RONDA<br>DIÁRIA</strong>
+      <span>Monitoramento de Notícias</span>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a class="nav-item active" href="dashboard.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" href="index.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Buscar Notícias
+    </a>
+    <a class="nav-item" href="cadastro.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      Empresas/Clientes
+    </a>
+    <a class="nav-item" href="empresas.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 10h10M7 14h6"/></svg>
+      Empresas no Banco
+    </a>
+    <a class="nav-item" href="noticias.html">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 4h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4z"/><path d="M8 8h6"/><path d="M8 12h4"/></svg>
+      Notícias Salvas
+    </a>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1>Dashboard de Sentimentos</h1>
+      <p>Acompanhe análises, sentimentos de mercado e volume de menções.</p>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- STATUS BAR -->
+    <div class="status-bar loading" id="statusBar">
+      <span class="dot"></span>
+      <span id="statusText">Buscando dados analíticos...</span>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls-bar">
+      <div class="control-group">
+        <label for="companyFilter">Empresa Monitorada:</label>
+        <select id="companyFilter" class="select-field">
+          <option value="all">Todas as empresas</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- CRISIS WIDGET -->
+    <div class="crisis-alert" id="crisisAlert">
+      <div class="crisis-icon">⚠️</div>
+      <div class="crisis-content">
+        <h4>Alerta de Crise Reputacional!</h4>
+        <p id="crisisMessage">Esta empresa apresenta mais de 40% de sentimentos negativos nas notícias monitoradas.</p>
+      </div>
+    </div>
+
+    <!-- KPIS -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <span class="kpi-label">Total Monitorado</span>
+        <span class="kpi-val" id="kpiTotal">—</span>
+      </div>
+      <div class="kpi-card kpi-positive">
+        <span class="kpi-label">Menções Positivas</span>
+        <span class="kpi-val" id="kpiPositive">—</span>
+      </div>
+      <div class="kpi-card kpi-neutral">
+        <span class="kpi-label">Menções Neutras</span>
+        <span class="kpi-val" id="kpiNeutral">—</span>
+      </div>
+      <div class="kpi-card kpi-negative">
+        <span class="kpi-label">Menções Negativas</span>
+        <span class="kpi-val" id="kpiNegative">—</span>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts-grid">
+      <!-- ROSCA DE SENTIMENTO -->
+      <div class="chart-card">
+        <h3>Distribuição de Sentimento</h3>
+        <div class="chart-container">
+          <canvas id="sentimentChart"></canvas>
+        </div>
+      </div>
+      <!-- VOLUME POR EMPRESA -->
+      <div class="chart-card">
+        <h3>Volume de Menções por Empresa</h3>
+        <div class="chart-container">
+          <canvas id="volumeChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECENT HIGHLIGHTS -->
+    <div class="highlights-card">
+      <h3>Destaques Recentes Analisados</h3>
+      <div class="highlights-list" id="highlightsList">
+        <div style="color:var(--text-muted); font-size:13.5px;">Carregando notícias...</div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  const statusBar = document.getElementById('statusBar');
+  const statusText = document.getElementById('statusText');
+  const companyFilter = document.getElementById('companyFilter');
+  const crisisAlert = document.getElementById('crisisAlert');
+  const crisisMessage = document.getElementById('crisisMessage');
+  
+  const kpiTotal = document.getElementById('kpiTotal');
+  const kpiPositive = document.getElementById('kpiPositive');
+  const kpiNeutral = document.getElementById('kpiNeutral');
+  const kpiNegative = document.getElementById('kpiNegative');
+  
+  const highlightsList = document.getElementById('highlightsList');
+
+  let todasEmpresas = [];
+  let todasNoticias = [];
+
+  // Charts
+  let sentimentChartInstance = null;
+  let volumeChartInstance = null;
+
+  function setStatus(msg, type = 'ok') {
+    statusText.textContent = msg;
+    statusBar.className = 'status-bar ' + type;
+  }
+
+  async function carregarDados() {
+    setStatus('Buscando dados analíticos...', 'loading');
+    try {
+      // Fetch empresas
+      const resEmpresas = await fetch('/empresas');
+      todasEmpresas = await resEmpresas.json();
+
+      // Fetch noticias
+      const resNoticias = await fetch('/noticias');
+      todasNoticias = await resNoticias.json();
+
+      if (!Array.isArray(todasEmpresas) || !Array.isArray(todasNoticias)) {
+        throw new Error('Retorno inválido das APIs.');
+      }
+
+      // Popular Dropdown
+      companyFilter.innerHTML = '<option value="all">Todas as empresas</option>' +
+        todasEmpresas.map(e => `<option value="${e.id_empresa}">${e.nome}</option>`).join('');
+
+      renderDashboard();
+      setStatus('Dashboard carregado com sucesso.', 'ok');
+    } catch (err) {
+      console.error(err);
+      setStatus('Erro ao buscar dados no servidor para gerar o dashboard.', 'error');
+    }
+  }
+
+  function renderDashboard() {
+    const filterVal = companyFilter.value;
+
+    // 1. Filtrar Notícias
+    let filtradas = [];
+    if (filterVal === 'all') {
+      filtradas = todasNoticias;
+    } else {
+      const empresaId = Number(filterVal);
+      filtradas = todasNoticias.filter(n => n.empresa_id === empresaId);
+    }
+
+    // 2. Calcular KPIs de Sentimento
+    const total = filtradas.length;
+    let positivas = 0;
+    let neutras = 0;
+    let negativas = 0;
+
+    filtradas.forEach(n => {
+      const s = String(n.sentimento || 'neutro').toLowerCase();
+      if (s === 'positivo') positivas++;
+      else if (s === 'negativo') negativas++;
+      else neutras++;
+    });
+
+    kpiTotal.textContent = total;
+    kpiPositive.textContent = positivas;
+    kpiNeutral.textContent = neutras;
+    kpiNegative.textContent = negativas;
+
+    // 3. Atualizar Donut Chart
+    updateSentimentChart(positivas, neutras, negativas);
+
+    // 4. Calcular Volume por Empresa
+    const volumeData = {};
+    // Garantir que todas as empresas apareçam na lista do volume (mesmo que com 0)
+    todasEmpresas.forEach(e => {
+      volumeData[e.nome] = 0;
+    });
+
+    todasNoticias.forEach(n => {
+      const nome = n.empresa_nome || 'Desconhecida';
+      if (volumeData[nome] !== undefined) {
+        volumeData[nome]++;
+      } else {
+        volumeData[nome] = 1;
+      }
+    });
+
+    // Ordenar e pegar top 5
+    const volumeSorted = Object.entries(volumeData)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+
+    updateVolumeChart(
+      volumeSorted.map(item => item[0]),
+      volumeSorted.map(item => item[1])
+    );
+
+    // 5. Verificar Crise Reputacional
+    let crisisDetected = false;
+    let crisisCompName = '';
+    let pctNegativa = 0;
+
+    if (filterVal === 'all') {
+      // Procurar se alguma empresa individualmente está em crise
+      for (const e of todasEmpresas) {
+        const noticiasEmpresa = todasNoticias.filter(n => n.empresa_id === e.id_empresa);
+        if (noticiasEmpresa.length >= 3) {
+          const negs = noticiasEmpresa.filter(n => n.sentimento === 'negativo').length;
+          const pct = (negs / noticiasEmpresa.length) * 100;
+          if (pct >= 40) {
+            crisisDetected = true;
+            crisisCompName = e.nome;
+            pctNegativa = Math.round(pct);
+            break;
+          }
+        }
+      }
+      if (crisisDetected) {
+        crisisMessage.textContent = `A empresa "${crisisCompName}" apresenta um alto volume de notícias negativas (${pctNegativa}%). Ação corretiva é recomendada.`;
+        crisisAlert.style.display = 'flex';
+      } else {
+        crisisAlert.style.display = 'none';
+      }
+    } else {
+      const selectedEmp = todasEmpresas.find(e => String(e.id_empresa) === filterVal);
+      if (total >= 3 && (negativas / total) >= 0.40) {
+        pctNegativa = Math.round((negativas / total) * 100);
+        crisisMessage.textContent = `A empresa "${selectedEmp ? selectedEmp.nome : ''}" atingiu ${pctNegativa}% de avaliações negativas no clipping.`;
+        crisisAlert.style.display = 'flex';
+      } else {
+        crisisAlert.style.display = 'none';
+      }
+    }
+
+    // 6. Listar Recentes
+    if (filtradas.length === 0) {
+      highlightsList.innerHTML = '<div style="color:var(--text-muted); font-size:13.5px;">Nenhuma notícia registrada com sentimento para este filtro.</div>';
+    } else {
+      const ultimas = filtradas.slice(0, 10);
+      highlightsList.innerHTML = ultimas.map(n => `
+        <div class="highlight-item">
+          <div class="highlight-body">
+            <span class="highlight-company">${n.empresa_nome || 'Sem Empresa'}</span>
+            <span class="highlight-title">${n.titulo}</span>
+          </div>
+          <span class="sentiment-badge badge-${n.sentimento || 'neutro'}">${n.sentimento || 'neutro'}</span>
+        </div>
+      `).join('');
+    }
+  }
+
+  function updateSentimentChart(pos, neu, neg) {
+    const ctx = document.getElementById('sentimentChart').getContext('2d');
+    
+    if (sentimentChartInstance) {
+      sentimentChartInstance.destroy();
+    }
+
+    if (pos === 0 && neu === 0 && neg === 0) {
+      // Se não há dados, colocar um placeholder gráfico
+      sentimentChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Sem dados'],
+          datasets: [{
+            data: [1],
+            backgroundColor: ['#e8eaf2'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+      return;
+    }
+
+    sentimentChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Positivo', 'Neutro', 'Negativo'],
+        datasets: [{
+          data: [pos, neu, neg],
+          backgroundColor: ['#10b981', '#9ca3af', '#f43f5e'],
+          borderWidth: 2,
+          borderColor: '#ffffff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '65%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              usePointStyle: true,
+              font: { family: 'Lato', size: 12, weight: 'bold' }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function updateVolumeChart(labels, values) {
+    const ctx = document.getElementById('volumeChart').getContext('2d');
+
+    if (volumeChartInstance) {
+      volumeChartInstance.destroy();
+    }
+
+    if (!values.length || values.every(v => v === 0)) {
+      // Sem dados
+      volumeChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Sem dados'],
+          datasets: [{
+            data: [0],
+            backgroundColor: ['#e8eaf2']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y'
+        }
+      });
+      return;
+    }
+
+    volumeChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Quantidade de notícias',
+          data: values,
+          backgroundColor: 'rgba(139, 92, 246, 0.85)',
+          borderRadius: 6,
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { precision: 0 }
+          },
+          y: {
+            grid: { display: false }
+          }
+        }
+      }
+    });
+  }
+
+  companyFilter.addEventListener('change', renderDashboard);
+
+  // Inicializar
+  carregarDados();
+</script>
+</body>
+</html>

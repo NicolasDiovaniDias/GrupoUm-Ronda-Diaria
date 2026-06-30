@@ -87,6 +87,7 @@ CREATE TABLE noticia_salva (
     resumo TEXT,
     data_noticia VARCHAR(100),
     imagem TEXT,
+    sentimento VARCHAR(20) DEFAULT 'neutro' CHECK (sentimento IN ('positivo', 'neutro', 'negativo')),
     data_salvamento TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_noticia_salva_empresa
