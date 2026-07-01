@@ -89,6 +89,9 @@ CREATE TABLE noticia_salva (
     imagem TEXT,
     sentimento VARCHAR(20) DEFAULT 'neutro' CHECK (sentimento IN ('positivo', 'neutro', 'negativo')),
     data_salvamento TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    sensacionalismo INT DEFAULT 0,
+    confiabilidade INT DEFAULT 100,
+    analise_fato TEXT,
 
     CONSTRAINT fk_noticia_salva_empresa
         FOREIGN KEY (empresa_id)

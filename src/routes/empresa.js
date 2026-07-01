@@ -324,4 +324,115 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+router.get('/:id/acoes', async (req, res) => {
+    const id = Number(req.params.id);
+    let client;
+
+    try {
+        client = await pool.connect();
+        
+        // 1. Verificar se a empresa existe
+        const empresaRes = await client.query('SELECT nome, bolsa FROM empresa WHERE id_empresa = $1 LIMIT 1', [id]);
+        if (empresaRes.rows.length === 0) {
+            return res.status(404).json({ sucesso: false, mensagem: 'Empresa não encontrada.' });
+        }
+
+        const empresa = empresaRes.rows[0];
+        const nome = empresa.nome;
+        const bolsa = empresa.bolsa || 'TICKER';
+
+        // 2. Buscar as notícias salvas da empresa nos últimos 14 dias
+        const noticiasRes = await client.query(`
+            SELECT sentimento, data_salvamento::date as data_dia
+            FROM noticia_salva
+            WHERE empresa_id = $1 AND data_salvamento >= NOW() - INTERVAL '14 days'
+        `, [id]);
+        const noticias = noticiasRes.rows;
+
+        // Agrupar notícias por data (YYYY-MM-DD)
+        const noticiasPorDia = {};
+        noticias.forEach(n => {
+            if (!n.data_dia) return;
+            const diaStr = new Date(n.data_dia).toISOString().split('T')[0];
+            if (!noticiasPorDia[diaStr]) {
+                noticiasPorDia[diaStr] = [];
+            }
+            noticiasPorDia[diaStr].push(n.sentimento);
+        });
+
+        // 3. Gerar histórico de 14 dias (de D-13 até D-0)
+        const historico = [];
+        let precoBase = 50.0;
+        
+        // Ajustar preço base de acordo com ações reais famosas
+        const bolsaUpper = bolsa.toUpperCase();
+        if (bolsaUpper.includes('AAPL')) precoBase = 180.0;
+        else if (bolsaUpper.includes('LREN')) precoBase = 16.5;
+        else if (bolsaUpper.includes('NVDA')) precoBase = 120.0;
+        else if (bolsaUpper.includes('PETR')) precoBase = 36.0;
+        else if (bolsaUpper.includes('VALE')) precoBase = 62.0;
+
+        let precoAtual = precoBase;
+
+        for (let i = 13; i >= 0; i--) {
+            const dataAux = new Date();
+            dataAux.setDate(dataAux.getDate() - i);
+            const diaStr = dataAux.toISOString().split('T')[0];
+
+            // Obter sentimentos do dia
+            const sentimentosDia = noticiasPorDia[diaStr] || [];
+            const pos = sentimentosDia.filter(s => s === 'positivo').length;
+            const neg = sentimentosDia.filter(s => s === 'negativo').length;
+
+            // Calcular variação percentual
+            // Deriva aleatória natural entre -0.4% e +0.4%
+            let variacao = (Math.random() * 0.8 - 0.4); 
+
+            // Se houver notícias negativas, cai
+            if (neg > 0) {
+                variacao -= (neg * (Math.random() * 1.5 + 0.5)); // queda de 0.5% a 2% por notícia negativa
+            }
+            // Se houver notícias positivas, sobe
+            if (pos > 0) {
+                variacao += (pos * (Math.random() * 1.2 + 0.3)); // alta de 0.3% a 1.5% por notícia positiva
+            }
+
+            // Limitar a variação diária para ficar realista (-8% a +8%)
+            variacao = Math.max(-8, Math.min(8, variacao));
+
+            const precoAnterior = precoAtual;
+            precoAtual = precoAnterior * (1 + variacao / 100);
+
+            // Determinar o sentimento predominante do dia
+            let sentDia = 'neutro';
+            if (pos > neg) sentDia = 'positivo';
+            else if (neg > pos) sentDia = 'negativo';
+
+            historico.push({
+                data: diaStr,
+                preco: Number(precoAtual.toFixed(2)),
+                variacao: Number(variacao.toFixed(2)),
+                positivas: pos,
+                negativas: neg,
+                sentimento_predominante: sentDia
+            });
+        }
+
+        res.json({
+            sucesso: true,
+            empresa: nome,
+            bolsa: bolsa,
+            historico: historico
+        });
+
+    } catch (erro) {
+        console.error('Erro ao gerar cotações correlacionadas:', erro);
+        res.status(500).json({ sucesso: false, mensagem: 'Erro interno ao processar cotações.' });
+    } finally {
+        if (client) {
+            client.release();
+        }
+    }
+});
+
 module.exports = router;

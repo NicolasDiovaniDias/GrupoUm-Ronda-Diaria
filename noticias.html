@@ -115,6 +115,81 @@ body { font-family: 'Lato', sans-serif; background: var(--body-bg); color: var(-
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
 }
+
+/* ── MÉTRICAS DE IA (SENSACIONALISMO / CONFIABILIDADE) ── */
+.card-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 8px;
+  background: #f8f9fc;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 12px;
+}
+.metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.metric-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.metric-label {
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
+}
+.metric-val {
+  font-weight: 700;
+  color: var(--text-main);
+  font-size: 11px;
+}
+.metric-bar-bg {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.metric-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+.metric-fill-sensacionalismo {
+  background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
+  background-size: 200% 100%;
+}
+.metric-fill-confiabilidade {
+  background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+  background-size: 200% 100%;
+}
+
+.fact-check-badge {
+  background: rgba(139, 92, 246, 0.04);
+  border: 1px solid rgba(139, 92, 246, 0.12);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--text-main);
+  margin-top: 4px;
+  line-height: 1.45;
+}
+.fact-check-title {
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Sora', sans-serif;
+  font-size: 11px;
+}
 </style>
 </head>
 <body>
@@ -211,19 +286,56 @@ body { font-family: 'Lato', sans-serif; background: var(--body-bg); color: var(-
       return;
     }
 
-    listaEl.innerHTML = itens.map(item => `
-      <article class="card">
-        <div class="card-meta">
-          <span>${item.empresa_nome || 'Empresa não informada'} • ${item.data_noticia || 'Data não informada'}</span>
-          <span class="sentiment-badge badge-${item.sentimento || 'neutro'}">${item.sentimento || 'neutro'}</span>
-        </div>
-        <div class="card-title">${item.titulo || 'Sem título'}</div>
-        <div class="card-desc">${item.resumo || 'Sem resumo disponível.'}</div>
-        <div class="card-actions">
-          <a class="btn-open" href="${item.link}" target="_blank" rel="noopener noreferrer">Abrir notícia</a>
-        </div>
-      </article>
-    `).join('');
+    listaEl.innerHTML = itens.map(item => {
+      const sens = item.sensacionalismo !== undefined && item.sensacionalismo !== null ? Number(item.sensacionalismo) : 0;
+      const conf = item.confiabilidade !== undefined && item.confiabilidade !== null ? Number(item.confiabilidade) : 100;
+      
+      return `
+        <article class="card">
+          <div class="card-meta">
+            <span>${item.empresa_nome || 'Empresa não informada'} • ${item.data_noticia || 'Data não informada'}</span>
+            <span class="sentiment-badge badge-${item.sentimento || 'neutro'}">${item.sentimento || 'neutro'}</span>
+          </div>
+          <div class="card-title">${item.titulo || 'Sem título'}</div>
+          <div class="card-desc">${item.resumo || 'Sem resumo disponível.'}</div>
+          
+          <div class="card-metrics">
+            <div class="metric-item">
+              <div class="metric-label-row">
+                <span class="metric-label">Sensacionalismo</span>
+                <span class="metric-val">${sens}%</span>
+              </div>
+              <div class="metric-bar-bg">
+                <div class="metric-bar-fill metric-fill-sensacionalismo" style="width: ${sens}%"></div>
+              </div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label-row">
+                <span class="metric-label">Confiabilidade</span>
+                <span class="metric-val">${conf}%</span>
+              </div>
+              <div class="metric-bar-bg">
+                <div class="metric-bar-fill metric-fill-confiabilidade" style="width: ${conf}%"></div>
+              </div>
+            </div>
+          </div>
+
+          ${item.analise_fato ? `
+          <div class="fact-check-badge">
+            <div class="fact-check-title">
+              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              Análise Factual da IA
+            </div>
+            <div>${item.analise_fato}</div>
+          </div>
+          ` : ''}
+
+          <div class="card-actions">
+            <a class="btn-open" href="${item.link}" target="_blank" rel="noopener noreferrer">Abrir notícia</a>
+          </div>
+        </article>
+      `;
+    }).join('');
   }
 
   function popularFiltroEmpresas(itens) {

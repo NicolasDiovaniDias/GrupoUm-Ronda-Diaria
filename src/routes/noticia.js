@@ -20,7 +20,10 @@ router.get('/', async (req, res) => {
                 data_noticia,
                 imagem,
                 sentimento,
-                data_salvamento
+                data_salvamento,
+                sensacionalismo,
+                confiabilidade,
+                analise_fato
             FROM noticia_salva
             ORDER BY id_noticia_salva DESC
         `);

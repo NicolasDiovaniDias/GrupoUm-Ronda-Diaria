@@ -36,7 +36,18 @@ async function analisarComGemini(texto, titulo) {
                 {
                     parts: [
                         {
-                            text: `Resuma a seguinte notícia de forma curta e objetiva (máximo 3 linhas) em português e analise o sentimento geral (positivo, neutro ou negativo) em relação à empresa do contexto.\n\nTítulo: "${titulo}"\n\nConteúdo:\n${texto}`
+                            text: `Analise a seguinte notícia de forma detalhada e retorne o resultado em JSON estruturado de acordo com as especificações.
+
+Título da notícia: "${titulo}"
+Conteúdo da notícia:
+${texto}
+
+Instruções adicionais:
+1. Resuma a notícia de forma curta e objetiva (no máximo 3 linhas) em português.
+2. Analise o sentimento geral (positivo, neutro ou negativo) em relação à empresa do contexto.
+3. Avalie o "sensacionalismo" (porcentagem de 0 a 100): títulos clickbait, exagerados ou apelativos devem ter pontuação alta. Títulos factuais e objetivos devem ter pontuação baixa.
+4. Avalie a "confiabilidade" (porcentagem de 0 a 100): conteúdos com coerência factual, fontes citadas e argumentos lógicos devem ter pontuação alta. Boataria ou acusações sem provas devem pontuar baixo.
+5. Forneça uma breve justificativa em português ("analise_fato") com até 2 frases sobre os critérios usados para as pontuações de sensacionalismo e confiabilidade.`
                         }
                     ]
                 }
@@ -54,9 +65,21 @@ async function analisarComGemini(texto, titulo) {
                             type: "STRING",
                             enum: ["positivo", "neutro", "negativo"],
                             description: "Sentimento geral da notícia em relação à empresa."
+                        },
+                        sensacionalismo: {
+                            type: "INTEGER",
+                            description: "Nota de 0 a 100 para sensacionalismo e apelo a cliques no título e texto."
+                        },
+                        confiabilidade: {
+                            type: "INTEGER",
+                            description: "Nota de 0 a 100 para a credibilidade e base factual do texto."
+                        },
+                        analise_fato: {
+                            type: "STRING",
+                            description: "Justificativa curta das notas em português."
                         }
                     },
-                    required: ["resumo", "sentimento"]
+                    required: ["resumo", "sentimento", "sensacionalismo", "confiabilidade", "analise_fato"]
                 }
             }
         },
@@ -72,7 +95,10 @@ async function analisarComGemini(texto, titulo) {
     const result = JSON.parse(jsonString);
     return {
         resumo: result.resumo,
-        sentimento: result.sentimento
+        sentimento: result.sentimento,
+        sensacionalismo: Number(result.sensacionalismo || 0),
+        confiabilidade: Number(result.confiabilidade || 100),
+        analise_fato: result.analise_fato || ''
     };
 }
 

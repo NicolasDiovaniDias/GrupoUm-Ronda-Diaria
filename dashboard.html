@@ -697,6 +697,14 @@ body {
       </div>
     </div>
 
+    <!-- STOCK CORRELATION CHART -->
+    <div class="chart-card" id="stockCorrelationCard" style="display: none; width: 100%; margin-top: 4px;">
+      <h3>Análise de Correlação: Preço da Ação vs. Sentimento Diário Consolidado (Últimos 14 Dias)</h3>
+      <div class="chart-container" style="max-height: 350px; height: 280px; position: relative;">
+        <canvas id="stockCorrelationChart"></canvas>
+      </div>
+    </div>
+
     <!-- RECENT HIGHLIGHTS -->
     <div class="highlights-card">
       <h3>Destaques Recentes Analisados</h3>
@@ -752,6 +760,7 @@ body {
   // Charts
   let sentimentChartInstance = null;
   let volumeChartInstance = null;
+  let stockCorrelationChartInstance = null;
 
   function setStatus(msg, type = 'ok') {
     statusText.textContent = msg;
@@ -895,6 +904,19 @@ body {
           <span class="sentiment-badge badge-${n.sentimento || 'neutro'}">${n.sentimento || 'neutro'}</span>
         </div>
       `).join('');
+    }
+
+    // 7. Atualizar Gráfico de Correlação Acionária
+    const stockCard = document.getElementById('stockCorrelationCard');
+    if (filterVal === 'all') {
+      stockCard.style.display = 'none';
+      if (stockCorrelationChartInstance) {
+        stockCorrelationChartInstance.destroy();
+        stockCorrelationChartInstance = null;
+      }
+    } else {
+      stockCard.style.display = 'block';
+      carregarGraficoAcoes(filterVal);
     }
   }
 
@@ -1116,6 +1138,143 @@ body {
       </html>
     `);
     win.document.close();
+  }
+
+  async function carregarGraficoAcoes(empresaId) {
+    try {
+      const res = await fetch(`/empresas/${empresaId}/acoes`);
+      const data = await res.json();
+      if (!res.ok || !data.sucesso) throw new Error(data.mensagem || 'Falha ao buscar cotações.');
+
+      const hist = data.historico || [];
+      const labels = hist.map(h => {
+        const parts = h.data.split('-');
+        return `${parts[2]}/${parts[1]}`;
+      });
+      const precos = hist.map(h => h.preco);
+      const sentimentos = hist.map(h => h.positivas - h.negativas);
+
+      renderizarGraficoAcoes(labels, precos, sentimentos, data.bolsa);
+    } catch (err) {
+      console.error('Erro ao carregar gráfico de ações:', err);
+    }
+  }
+
+  function renderizarGraficoAcoes(labels, precos, sentimentos, ticker) {
+    const ctx = document.getElementById('stockCorrelationChart').getContext('2d');
+    
+    if (stockCorrelationChartInstance) {
+      stockCorrelationChartInstance.destroy();
+    }
+
+    stockCorrelationChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Sentimento Consolidado (Pos - Neg)',
+            data: sentimentos,
+            type: 'bar',
+            yAxisID: 'ySentiment',
+            backgroundColor: sentimentos.map(val => {
+              if (val > 0) return 'rgba(16, 185, 129, 0.35)';
+              if (val < 0) return 'rgba(244, 63, 94, 0.35)';
+              return 'rgba(156, 163, 175, 0.15)';
+            }),
+            borderColor: sentimentos.map(val => {
+              if (val > 0) return '#10b981';
+              if (val < 0) return '#f43f5e';
+              return '#9ca3af';
+            }),
+            borderWidth: 1.5,
+            borderRadius: 4,
+            barThickness: 20
+          },
+          {
+            label: `Preço da Ação (${ticker})`,
+            data: precos,
+            type: 'line',
+            yAxisID: 'yPrice',
+            borderColor: '#8b5cf6',
+            backgroundColor: 'rgba(139, 92, 246, 0.04)',
+            borderWidth: 3,
+            tension: 0.3,
+            fill: true,
+            pointBackgroundColor: '#8b5cf6',
+            pointRadius: 3,
+            pointHoverRadius: 5
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              usePointStyle: true,
+              font: { family: 'Lato', size: 11, weight: 'bold' }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                let label = context.dataset.label || '';
+                if (label) {
+                  label += ': ';
+                }
+                if (context.datasetIndex === 1) {
+                  label += '$' + context.parsed.y.toFixed(2);
+                } else {
+                  label += (context.parsed.y > 0 ? '+' : '') + context.parsed.y;
+                }
+                return label;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { font: { family: 'Lato', size: 10 } }
+          },
+          yPrice: {
+            type: 'linear',
+            position: 'left',
+            grid: { color: '#e8eaf2' },
+            ticks: {
+              font: { family: 'Lato', size: 10 },
+              callback: function(value) { return '$' + value; }
+            },
+            title: {
+              display: true,
+              text: 'Preço da Ação',
+              font: { family: 'Sora', size: 11, weight: 'bold' }
+            }
+          },
+          ySentiment: {
+            type: 'linear',
+            position: 'right',
+            grid: { drawOnChartArea: false },
+            ticks: {
+              precision: 0,
+              font: { family: 'Lato', size: 10 }
+            },
+            title: {
+              display: true,
+              text: 'Sentimento Líquido',
+              font: { family: 'Sora', size: 11, weight: 'bold' }
+            }
+          }
+        }
+      }
+    });
   }
 
   companyFilter.addEventListener('change', renderDashboard);

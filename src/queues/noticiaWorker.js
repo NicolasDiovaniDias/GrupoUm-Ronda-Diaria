@@ -13,6 +13,9 @@ const worker = new Worker('noticiasQueue', async (job) => {
 
     let resumoFinal = 'Resumo indisponível para esta notícia.';
     let sentimentoFinal = 'neutro';
+    let sensacionalismoFinal = 0;
+    let confiabilidadeFinal = 100;
+    let analiseFatoFinal = '';
 
     try {
         if (process.env.GEMINI_API_KEY) {
@@ -21,6 +24,9 @@ const worker = new Worker('noticiasQueue', async (job) => {
                 const analise = await analisarComGemini(textoCompleto, titulo);
                 resumoFinal = analise.resumo;
                 sentimentoFinal = analise.sentimento;
+                sensacionalismoFinal = analise.sensacionalismo;
+                confiabilidadeFinal = analise.confiabilidade;
+                analiseFatoFinal = analise.analise_fato;
             } else {
                 console.log(`[Worker] Texto extraído muito curto (${textoCompleto ? textoCompleto.length : 0} caracteres). Mantendo resumo original.`);
                 return;
@@ -40,9 +46,9 @@ const worker = new Worker('noticiasQueue', async (job) => {
         client = await pool.connect();
         await client.query(
             `UPDATE noticia_salva 
-             SET resumo = $1, sentimento = $2
-             WHERE id_noticia_salva = $3`,
-            [resumoFinal, sentimentoFinal, idNoticia]
+             SET resumo = $1, sentimento = $2, sensacionalismo = $3, confiabilidade = $4, analise_fato = $5
+             WHERE id_noticia_salva = $6`,
+            [resumoFinal, sentimentoFinal, sensacionalismoFinal, confiabilidadeFinal, analiseFatoFinal, idNoticia]
         );
         console.log(`[Worker] Sucesso! Notícia ID ${idNoticia} enriquecida com o resumo do Gemini. Sentimento: ${sentimentoFinal.toUpperCase()}`);
     } catch (erroDB) {
