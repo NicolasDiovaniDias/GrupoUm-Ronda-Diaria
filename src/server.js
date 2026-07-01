@@ -6,6 +6,7 @@ const path = require('path');
 const empresaRoutes = require('./routes/empresa');
 const noticiaRoutes = require('./routes/noticia');
 const resumoRoutes = require('./routes/resumo');
+const relatorioRoutes = require('./routes/relatorio');
 
 // Inicializar Worker do BullMQ para escutar a fila em background
 require('./queues/noticiaWorker');
@@ -30,6 +31,7 @@ app.get('/index.html', (req, res) => {
 app.use('/empresas', empresaRoutes);
 app.use('/noticias', noticiaRoutes);
 app.use('/resumo', resumoRoutes);
+app.use('/relatorio', relatorioRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
