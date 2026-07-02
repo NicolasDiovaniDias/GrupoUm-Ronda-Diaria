@@ -522,6 +522,32 @@ body {
 .toast.show { transform: translateY(0); opacity: 1; }
 .toast.success { border-left: 4px solid #22d3a5; }
 .toast.error { border-left: 4px solid #ec4899; }
+
+.logo-area {
+  padding: 28px 22px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.logo-image {
+  width: 80px;
+  height: 78px;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  margin: 0 auto 12px;
+}
+
+.logo-image img {
+  width: 80px;
+  height: 78px;
+  object-fit: contain;
+  display: block;
+}
 </style>
 </head>
 <body>
@@ -529,9 +555,11 @@ body {
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="logo-area">
-    <div class="logo-mark">R</div>
+    <div class="logo-mark logo-image">
+      <img src="/images/logo-ronda-transp.png" alt="Ronda Diária" />
+    </div> 
     <div class="logo-text">
-      <strong>RONDA<br>DIÁRIA</strong>
+      <strong>RONDA DIÁRIA</strong>
       <span>Monitoramento de Notícias</span>
     </div>
   </div>

@@ -575,6 +575,32 @@ body {
   color: var(--text-main);
 }
 
+.logo-area {
+  padding: 28px 22px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.logo-image {
+  width: 80px;
+  height: 78px;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  margin: 0 auto 12px;
+}
+
+.logo-image img {
+  width: 80px;
+  height: 78px;
+  object-fit: contain;
+  display: block;
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -586,9 +612,11 @@ body {
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="logo-area">
-    <div class="logo-mark">R</div>
+    <div class="logo-mark logo-image">
+      <img src="/images/logo-ronda-transp.png" alt="Ronda Diária" />
+    </div> 
     <div class="logo-text">
-      <strong>RONDA<br>DIÁRIA</strong>
+      <strong>RONDA DIÁRIA</strong>
       <span>Monitoramento de Notícias</span>
     </div>
   </div>
